@@ -4700,6 +4700,158 @@ html[data-nums="on"] .amount {
 /* во время экскурсии кнопка персонажа не мешает */
 body.tour-on .mentor-fab { display: none; }
 
+
+/* --- адаптивность: узкие экраны --- */
+.head-tools {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 8px;
+}
+
+.mentor-fab {
+  bottom: calc(var(--tab-h, 74px) + 14px) !important;
+}
+
+@media (max-width: 430px) {
+  .head-tools { gap: 6px; }
+  .screen-head .head-note { display: none; }
+
+  /* быстрые категории: две строки вместо обрезки */
+  .quick-cats { grid-template-columns: repeat(3, 1fr); }
+  .quick-cat { padding: 8px 4px; }
+  .qc-name { font-size: 9.5px; white-space: normal; line-height: 1.15; }
+
+  .mentor-fab { width: 48px; height: 48px; }
+  .mentor-fab-face svg { width: 33px; height: 33px; }
+
+  /* вкладки: чуть компактнее подписи */
+  .tab span { font-size: 9.5px; }
+}
+
+@media (max-width: 360px) {
+  .quick-cats { grid-template-columns: repeat(2, 1fr); }
+  .tab span { font-size: 9px; }
+}
+
+.payday-empty {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+
+/* --- шапка на узких экранах --- */
+.head-top {
+  flex: 1 1 120px;
+}
+
+.head-tools {
+  flex: 0 1 auto;
+}
+
+@media (max-width: 430px) {
+  .screen-head {
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+  }
+
+  .screen-head h1 { font-size: 23px; }
+
+  .month-switch { padding: 2px; border-radius: 12px; }
+  .month-switch .icon-btn { width: 26px; height: 26px; }
+  .month-label { min-width: 84px; font-size: 12px; padding: 4px 2px; }
+
+  .streak-pill { margin-left: 4px; padding: 5px 9px; font-size: 12px; }
+
+  /* кнопка Фина не закрывает карточки: поднимаем выше и делаем меньше */
+  .mentor-fab { left: 10px; width: 46px; height: 46px; }
+  .mentor-fab-face svg { width: 31px; height: 31px; }
+}
+
+
+/* --- шапка: одна строка на узких экранах --- */
+@media (max-width: 430px) {
+  .head-top { flex: 1 1 90px; min-width: 0; gap: 8px; }
+  .head-text { min-width: 0; }
+  .screen-head h1 { font-size: 21px; }
+  .kicker { font-size: 10px; letter-spacing: .1em; }
+
+  .month-switch { padding: 2px; gap: 0; }
+  .month-switch .icon-btn { width: 22px; height: 24px; }
+  .month-label { min-width: 62px; padding: 3px 1px; font-size: 11px; }
+
+  .streak-pill { margin-left: 3px; padding: 4px 7px; gap: 3px; font-size: 11px; border-radius: 10px; }
+  .sp-fire { font-size: 11px; }
+}
+
+
+/* --- панель инструментов шапки: не растягивать --- */
+@media (max-width: 959px) {
+  .head-tools {
+    width: auto;
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 430px) {
+  .head-tools {
+    gap: 6px;
+  }
+  .head-tools .btn-sm { padding: 6px 8px; font-size: 11.5px; }
+}
+
+
+/* Фин в шапке (кнопка) */
+.icon-btn.mentor-head {
+  background: rgba(46, 196, 182, 0.16);
+  border: 1px solid rgba(46, 196, 182, 0.42);
+  color: #dff8f4;
+  padding: 0;
+  overflow: hidden;
+  flex: none;
+}
+
+.icon-btn.mentor-head svg { width: 24px; height: 24px; display: block; }
+
+@media (max-width: 899px) {
+  .mentor-fab { display: none !important; }
+}
+
+@media (min-width: 900px) {
+  .icon-btn.mentor-head { display: none; }
+}
+
+
+/* кнопка простого режима */
+.dash-mode { display: flex; margin: 2px 0 8px; }
+
+.mode-switch {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode-switch:hover { color: var(--text); border-color: var(--accent); }
+.mode-switch:active { transform: scale(0.98); }
+
+@media (max-width: 430px) {
+  .mode-switch { padding: 4px 9px; font-size: 11px; }
+}
+
 </style>
     <style>
 /* ===================== СТИЛИ ИНТЕРФЕЙСА ================================
@@ -8277,6 +8429,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `<h1>${UI.esc(opts.title || '')}</h1>` +
       (opts.sub ? `<p class="sub">${opts.sub}</p>` : '') +
       `</div>` +
+      (MF.mentor && MF.mentor.headerBtn ? MF.mentor.headerBtn() : '') +
       gear +
       `</div>` +
       (opts.tools ? `<div class="head-tools">${opts.tools}</div>` : '') +
@@ -9834,6 +9987,22 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       return '';
     }
     if (!p || !p.daysLeft) return '';
+
+    const empty = p.perDay < 1;
+
+    if (empty) {
+      return (
+        '<div class="card payday-card" data-action="payday-edit">' +
+        '<div class="card-head"><span class="card-title">До зарплаты</span>' +
+        '<span class="card-link">' + p.daysLeft + ' ' + MF.plural(p.daysLeft, 'день', 'дня', 'дней') + '</span></div>' +
+        '<div class="payday-empty">Свободных денег нет: цели и платежи забирают всё.</div>' +
+        '<div class="payday-meta">Счета ' + MF.money(p.accounts, { short: true }) +
+        ' · в целях ' + MF.money(p.goalsSaved, { short: true }) +
+        (p.planned > 0 ? ' · платежи ' + MF.money(p.planned, { short: true }) : '') +
+        '</div>' +
+        '</div>'
+      );
+    }
 
     const perDayText = MF.money(Math.round(p.perDay), { short: true });
     return (
@@ -18605,6 +18774,16 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     MF.App.render({ quick: true });
   };
 
+  /* кнопка в шапке экрана */
+  M.headerBtn = function () {
+    if (!M.enabled()) return '';
+    return (
+      '<button class="icon-btn mentor-head" data-action="mentor-open" aria-label="Спросить Фина" title="Спросить Фина">' +
+      M.face(22) +
+      '</button>'
+    );
+  };
+
   /* плавающая кнопка */
   M.bubbleHtml = function () {
     if (!M.enabled()) return '';
@@ -21070,6 +21249,13 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     const box = document.getElementById('mentorHost');
     if (!box || !MF.mentor) return;
     box.innerHTML = MF.mentor.bubbleHtml();
+
+    /* запоминаем реальную высоту нижней панели — от неё считаем позицию кнопки */
+    const bar = document.getElementById('tabbar');
+    if (bar) {
+      const h = Math.round(bar.getBoundingClientRect().height) || 74;
+      document.documentElement.style.setProperty('--tab-h', h + 'px');
+    }
   }
 
   function translateChrome() {
