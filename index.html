@@ -4185,6 +4185,24 @@ body[data-season="spring"] .hero::after {
   letter-spacing: .01em;
 }
 
+/* баннер: страница открыта не в браузере */
+.ctx-banner {
+  position: fixed;
+  left: 10px; right: 10px; top: calc(10px + var(--safe-top));
+  z-index: 500;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,176,32,.45);
+  background: rgba(40, 30, 12, .96);
+  color: #ffe4b0;
+  box-shadow: 0 18px 40px -20px rgba(0,0,0,.9);
+  animation: fadeUp .3s forwards;
+}
+
+.ctx-title { font-weight: 700; font-size: 13.5px; margin-bottom: 2px; }
+.ctx-text { font-size: 12px; color: #d9c39a; line-height: 1.4; }
+.ctx-banner .btn { margin-top: 8px; }
+
 </style>
   </head>
   <body>
@@ -10097,6 +10115,8 @@ body[data-season="spring"] .hero::after {
 
       `<div class="sec-head"><h2 class="sec-title">Приложение</h2></div>` +
       `<div class="card">` +
+      `<div class="field"><span class="field-label">Диагностика</span>` +
+      `<button class="btn btn-ghost btn-block" data-action="diagnostics">Проверить приложение</button></div>` +
       `<div class="field"><span class="field-label">Мастер настройки</span>` +
       `<button class="btn btn-ghost btn-block" data-action="onboarding">Пройти заново (3 шага)</button></div>` +
       `<div class="field" style="margin-bottom:0"><label for="pinValue">PIN-код (4–6 цифр)</label>` +
@@ -10216,11 +10236,6 @@ body[data-season="spring"] .hero::after {
       `<span class="row-sub">Экспорт операций в CSV</span></span>` +
       `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       (MF.autobackup ? MF.autobackup.rowHtml() : '') +
-      `<div class="list-row" data-action="family-open" style="border-bottom:1px solid var(--line)">` +
-      `<span class="row-ico">👨‍👩‍👧</span>` +
-      `<span class="row-text"><span class="row-title">Семейный режим</span>` +
-      `<span class="row-sub">Общий бюджет через обмен копиями</span></span>` +
-      `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       `<div class="list-row" data-action="csv-import" style="border-bottom:1px solid var(--line)">` +
       `<span class="row-ico">${UI.icon('download', '', 17)}</span>` +
       `<span class="row-text"><span class="row-title">Импорт выписки</span>` +
@@ -10255,6 +10270,7 @@ body[data-season="spring"] .hero::after {
     );
   };
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
@@ -14775,6 +14791,76 @@ body[data-season="spring"] .hero::after {
   const UI = MF.UI;
   const esc = (s) => UI.esc(s);
 
+  /* диагностика прямо в приложении: без отдельных файлов и загрузок */
+  F.diagnostics = function () {
+    const rows = [];
+    const push = (label, value, tone) =>
+      rows.push(
+        `<div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">` +
+          `<span style="color:var(--text-3)">${label}</span>` +
+          `<span style="font-weight:600;color:${tone === 'bad' ? 'var(--red)' : tone === 'ok' ? 'var(--green)' : 'var(--text)'}">${value}</span></div>`
+      );
+
+    const ua = navigator.userAgent;
+    const chrome = /Chrome\/(\d+)/.exec(ua);
+    const standalone =
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+
+    push('Экран', window.innerWidth + '×' + window.innerHeight + ' · ' + (window.devicePixelRatio || 1) + 'x');
+    push('Браузер', chrome ? 'Chrome ' + chrome[1] : ua.split(' ').slice(-2).join(' ').slice(0, 24));
+    push('Режим', standalone ? 'приложение' : 'вкладка браузера', standalone ? 'ok' : '');
+    push('Интернет', navigator.onLine ? 'есть' : 'нет');
+
+    const css = (prop, value) => {
+      try {
+        return CSS.supports(prop, value);
+      } catch (e) {
+        return false;
+      }
+    };
+    push('CSS Grid', css('display', 'grid') ? 'есть' : 'НЕТ', css('display', 'grid') ? 'ok' : 'bad');
+    push('color-mix()', css('background', 'color-mix(in srgb, #fff 50%, transparent)') ? 'есть' : 'нет');
+    push('IndexedDB', MF.idb && MF.idb.available() ? 'есть' : 'нет');
+
+    const view = document.getElementById('view');
+    push('#view блоков', view ? String(view.children.length) : 'нет', view && view.children.length ? 'ok' : 'bad');
+    push('Операций', String((MF.state.transactions || []).length));
+    push('Демо-данные', MF.state.demo ? 'включены' : 'нет');
+
+    UI.sheet({
+      title: 'Диагностика',
+      subtitle: 'что видит приложение на этом устройстве',
+      body:
+        rows.join('') +
+        `<p class="tiny" style="margin-top:14px">Если экран пустой, а здесь блоков 0 — проблема в браузере. ` +
+        `Если блоки есть, а на экране пусто — проблема в отображении темы.</p>` +
+        `<div class="row-between" style="margin-top:12px">` +
+        `<button class="btn btn-ghost btn-sm" data-action="diag-reset">Сбросить кэш</button>` +
+        `<button class="btn btn-ghost btn-sm" data-action="sheet-close">Закрыть</button></div>`,
+      wide: true
+    });
+  };
+
+  F.diagReset = function () {
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) {
+          rs.forEach(function (r) {
+            r.unregister();
+          });
+        });
+      }
+      if (window.caches) {
+        caches.keys().then(function (ks) {
+          ks.forEach(function (k) {
+            caches.delete(k);
+          });
+        });
+      }
+    } catch (e) {}
+    UI.closeSheet();
+    UI.toast('Кэш очищен — перезагрузите приложение', 'good');
+  };
   /* приветствие при самом первом запуске: два понятных пути */
   F.welcome = function () {
     UI.sheet({
@@ -15028,6 +15114,7 @@ body[data-season="spring"] .hero::after {
     document.body.dataset.season = F.season();
   };
 })(window.MF);
+
 
 
 
@@ -15358,217 +15445,6 @@ body[data-season="spring"] .hero::after {
   };
 })(window.MF);
 
-
-</script>
-    <script>
-/* js/family.js */
-/* =========================================================================
-   MoneyFlow — семейный режим без сервера
-   Два человека обмениваются JSON-копиями, приложение объединяет данные по id.
-   Ничего никуда не отправляется: только файлы между устройствами.
-   ========================================================================= */
-(function (MF) {
-  const FM = (MF.family = {});
-  const UI = MF.UI;
-  const esc = (s) => UI.esc(s);
-
-  const KEYED = ['transactions', 'goals', 'loans', 'debts', 'accounts', 'categories', 'recurring'];
-
-  function byId(list) {
-    const map = {};
-    (list || []).forEach(function (item) {
-      if (item && item.id) map[item.id] = item;
-    });
-    return map;
-  }
-
-  function txKey(t) {
-    return [t.date, Math.round(Number(t.amount) * 100), t.type, t.accountId || '', String(t.note || '').trim().toLowerCase()].join('|');
-  }
-
-  /* объединяет два состояния: base — текущее, incoming — из файла */
-  FM.merge = function (base, incoming) {
-    if (!incoming || typeof incoming !== 'object') return { state: base, stats: {}, empty: true };
-
-    const out = JSON.parse(JSON.stringify(base || {}));
-    const stats = {};
-    let added = 0;
-
-    (KEYED || []).forEach(function (key) {
-      if (!Array.isArray(incoming[key])) return;
-      if (!Array.isArray(out[key])) out[key] = [];
-      const have = byId(out[key]);
-      const seenTx = {};
-      if (key === 'transactions') out[key].forEach(function (t) { seenTx[txKey(t)] = true; });
-
-      incoming[key].forEach(function (item) {
-        if (!item) return;
-        if (item.id && have[item.id]) {
-          /* уже есть — объединяем вложенные платежи, если они есть */
-          const target = have[item.id];
-          if (Array.isArray(item.payments) && Array.isArray(target.payments)) {
-            const pIds = {};
-            target.payments.forEach(function (p) { if (p && p.id) pIds[p.id] = true; });
-            item.payments.forEach(function (p) {
-              if (p && p.id && !pIds[p.id]) {
-                target.payments.push(p);
-                stats[key + '.payments'] = (stats[key + '.payments'] || 0) + 1;
-                added++;
-              }
-            });
-          }
-          return;
-        }
-        if (key === 'transactions') {
-          const k = txKey(item);
-          if (seenTx[k]) return;
-          seenTx[k] = true;
-        }
-        out[key].push(item);
-        if (item.id) have[item.id] = item;
-        stats[key] = (stats[key] || 0) + 1;
-        added++;
-      });
-    });
-
-    /* бюджеты по месяцам: объединяем лимиты, свои значения не теряем */
-    if (incoming.budgets && typeof incoming.budgets === 'object') {
-      out.budgets = out.budgets || {};
-      Object.keys(incoming.budgets).forEach(function (month) {
-        const src = incoming.budgets[month] || {};
-        const dst = out.budgets[month] || {};
-        const merged = {
-          total: dst.total || src.total || 0,
-          limits: Object.assign({}, src.limits || {}, dst.limits || {}),
-          reserve: dst.reserve || src.reserve || 0
-        };
-        out.budgets[month] = merged;
-      });
-    }
-
-    /* курсы валют: недостающие добавляем */
-    if (incoming.rates && typeof incoming.rates === 'object') {
-      out.rates = Object.assign({}, incoming.rates, out.rates || {});
-    }
-
-    return { state: out, stats: stats, added: added, empty: added === 0 };
-  };
-
-  function human(stats) {
-    const map = {
-      transactions: 'операций',
-      goals: 'целей',
-      loans: 'кредитов',
-      debts: 'долгов',
-      accounts: 'счетов',
-      categories: 'категорий',
-      recurring: 'регулярных платежей',
-      'loans.payments': 'платежей по кредитам',
-      'debts.payments': 'платежей по долгам'
-    };
-    return Object.keys(stats)
-      .filter(function (k) { return stats[k] > 0; })
-      .map(function (k) { return stats[k] + ' ' + (map[k] || k); })
-      .join(', ');
-  }
-
-  /* ------------------------------ экран -------------------------------- */
-  FM.open = function () {
-    UI.sheet({
-      title: 'Семейный режим',
-      subtitle: 'общий бюджет без сервера — через файлы',
-      body:
-        `<p class="tiny" style="margin-bottom:14px">Данные никуда не отправляются. Вы обмениваетесь копиями, ` +
-        `приложение объединяет записи по идентификаторам: повторного добавления не будет.</p>` +
-        `<div class="family-steps">` +
-        `<div class="fam-step"><b>1</b><span>Вы: «Поделиться копией» → отправьте файл партнёру</span></div>` +
-        `<div class="fam-step"><b>2</b><span>Партнёр: присылает вам свою копию</span></div>` +
-        `<div class="fam-step"><b>3</b><span>Вы: «Объединить с копией» → выберите его файл</span></div>` +
-        `</div>` +
-        `<div class="hint-row" id="familyHint">Пока ничего не выбрано</div>`,
-      footer:
-        `<button class="btn btn-ghost" data-action="family-export">Поделиться копией</button>` +
-        `<button class="btn btn-primary" data-action="family-join">Объединить с копией</button>`,
-      wide: true
-    });
-  };
-
-  FM.exportForPartner = function () {
-    const payload = JSON.parse(JSON.stringify(MF.state));
-    payload._family = { at: MF.todayISO(), app: 'MoneyFlow', version: 1 };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'moneyflow-для-семьи-' + MF.todayISO() + '.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-    MF.first.markBackup();
-    UI.toast('Копия сохранена — отправьте файл партнёру', 'good');
-  };
-
-  FM.openJoin = function () {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.addEventListener('change', function () {
-      const file = input.files && input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function () {
-        let data = null;
-        try {
-          data = JSON.parse(String(reader.result || ''));
-        } catch (e) {
-          UI.toast('Файл повреждён или это не копия MoneyFlow', 'bad');
-          return;
-        }
-        FM.preview(data, file.name);
-      };
-      reader.readAsText(file, 'utf-8');
-    });
-    input.click();
-  };
-
-  FM.preview = function (data, name) {
-    const res = FM.merge(MF.state, data);
-    const text = res.added ? human(res.stats) : 'новых записей нет';
-
-    UI.sheet({
-      title: 'Объединить данные',
-      subtitle: esc(name || 'файл'),
-      body:
-        `<div class="loot-box" style="border-color:rgba(124,140,255,.4)">` +
-        `<div class="loot-ico">👨‍👩‍👧</div>` +
-        `<div class="loot-name">${res.added ? '+' + res.added : 'нет новых'}</div>` +
-        `<div class="loot-sub">${esc(text)}</div>` +
-        `</div>` +
-        `<p class="tiny" style="margin-top:12px">Ваши записи не изменятся: добавляются только те, которых у вас нет. ` +
-        `Совпадающие по id и по дате-сумме-описанию пропускаются.</p>`,
-      footer:
-        `<button class="btn btn-ghost" data-action="sheet-close">Отмена</button>` +
-        `<button class="btn btn-primary" data-action="family-apply" ${res.added ? '' : 'disabled'}>Объединить</button>`,
-      wide: true
-    });
-
-    FM.pending = res;
-  };
-
-  FM.apply = function () {
-    if (!FM.pending || !FM.pending.added) {
-      UI.toast('Нечего объединять', '');
-      return;
-    }
-    MF.setState(FM.pending.state);
-    const added = FM.pending.added;
-    FM.pending = null;
-    UI.closeSheet();
-    UI.toast('Объединено: ' + added + ' записей', 'good');
-    if (MF.App && MF.App.render) MF.App.render();
-  };
-})(window.MF);
 
 </script>
     <script>
@@ -17074,6 +16950,30 @@ body[data-season="spring"] .hero::after {
     const uri = MF.appicons.dataUri(season || MF.prefs.appIcon);
     if (link.getAttribute('href') !== uri) link.setAttribute('href', uri);
   }
+  /* предупреждение, если страница открыта не в браузере, а во встроенном
+     просмотрщике мессенджера: там нет хранилища и service worker */
+  function warnRestrictedContext() {
+    const proto = String(location.protocol || '');
+    const ua = String(navigator.userAgent || '');
+    const restricted =
+      proto === 'content:' ||
+      proto === 'file:' ||
+      /Telegram|VKWebApp|Instagram|FBAN|WhatsApp/i.test(ua);
+
+    if (!restricted) return;
+    if (document.getElementById('ctxBanner')) return;
+
+    const inMessenger = /Telegram|VKWebApp|Instagram|FBAN|WhatsApp/i.test(ua);
+    const bar = document.createElement('div');
+    bar.id = 'ctxBanner';
+    bar.className = 'ctx-banner';
+    bar.innerHTML =
+      `<div class="ctx-title">${inMessenger ? 'Открыто внутри мессенджера' : 'Открыто как файл'}</div>` +
+      `<div class="ctx-text">Здесь не работают сохранение данных и офлайн-режим. ` +
+      `Откройте через ${inMessenger ? '⋮ → «Открыть в браузере»' : 'Chrome из «Файлов»'}.</div>` +
+      `<button class="btn btn-sm btn-primary" data-action="ctx-dismiss">Понятно</button>`;
+    document.body.appendChild(bar);
+  }
   /* простой режим: на Обзоре остаются только главные блоки */
   function applyDashboardMode() {
     const host = document.getElementById('view');
@@ -17423,6 +17323,12 @@ body[data-season="spring"] .hero::after {
     'onboarding': () => MF.first.openOnboarding(1),
     'welcome': () => MF.first.welcome(),
     'welcome-demo': () => MF.first.welcomeDemo(),
+    'ctx-dismiss': () => {
+      const el = document.getElementById('ctxBanner');
+      if (el) el.remove();
+    },
+    'diagnostics': () => MF.first.diagnostics(),
+    'diag-reset': () => MF.first.diagReset(),
     'backup-now': () => {
       MF.exportJSON();
       MF.first.markBackup();
@@ -17453,10 +17359,7 @@ body[data-season="spring"] .hero::after {
       render();
       UI.toast('Автобэкап выключен', '');
     },
-    'family-open': () => MF.family.open(),
-    'family-export': () => MF.family.exportForPartner(),
-    'family-join': () => MF.family.openJoin(),
-    'family-apply': () => MF.family.apply(),    'report-open': () => MF.report.open(),
+    'report-open': () => MF.report.open(),
     'csv-import': () => MF.csv.openImport(),
     'csv-save': () => MF.csv.save(),
     'tpl-apply': (el) => MF.quick.applyTemplate(el.dataset.id),
@@ -17858,6 +17761,7 @@ body[data-season="spring"] .hero::after {
     applySafeAreas();
     restoreFromIdb();
     loadPhotosLazy();
+    warnRestrictedContext();
     if (MF.first && MF.first.hasPin && MF.first.hasPin()) {
       MF.first.unlocked = false;
       MF.first.showLock();
@@ -17905,6 +17809,10 @@ body[data-season="spring"] .hero::after {
     boot();
   }
 })(typeof window !== 'undefined' ? window : globalThis);
+
+
+
+
 
 
 
@@ -18043,6 +17951,7 @@ body[data-season="spring"] .hero::after {
 </script>
 </body>
 </html>
+
 
 
 
