@@ -4620,6 +4620,86 @@ html[data-nums="on"] .amount {
 
 .week-shot { width: 100%; border-radius: 14px; display: block; }
 
+
+/* --------------------- персонаж-проводник Фин ------------------------ */
+.mentor-fab {
+  position: fixed;
+  left: 14px;
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgba(46, 196, 182, 0.5);
+  background: radial-gradient(120% 120% at 30% 20%, #2ec4b6, #17766f);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.7), 0 0 0 4px rgba(46, 196, 182, 0.12);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+}
+
+.mentor-fab-face svg { width: 38px; height: 38px; display: block; }
+.mentor-fab:active { transform: scale(0.96); }
+
+@media (min-width: 900px) {
+  .mentor-fab { left: auto; right: 24px; bottom: 24px; width: 58px; height: 58px; }
+}
+
+/* приглашение на Обзоре */
+.mentor-invite { display: flex; align-items: center; gap: 12px; margin-top: 12px; border-color: rgba(46, 196, 182, 0.4); }
+.mi-face { flex: 0 0 58px; width: 58px; height: 58px; border-radius: 16px; overflow: hidden; background: rgba(46, 196, 182, 0.14); display: grid; place-items: center; }
+.mi-face svg { width: 58px; height: 58px; }
+.mi-body { flex: 1; min-width: 0; }
+.mi-title { font-size: 14px; font-weight: 700; }
+.mi-text { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.mi-go { color: var(--text-3); font-size: 20px; }
+
+/* панель */
+.mentor-head { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 16px; background: rgba(46, 196, 182, 0.1); border: 1px solid rgba(46, 196, 182, 0.25); }
+.mentor-face { flex: 0 0 72px; width: 72px; height: 72px; }
+.mentor-face svg { width: 72px; height: 72px; display: block; }
+.mentor-say { font-size: 13px; line-height: 1.45; }
+.mentor-log { max-height: 46vh; overflow-y: auto; margin-top: 12px; }
+
+.chat-text { font-size: 13.5px; line-height: 1.45; }
+
+/* экскурсия */
+.tour-overlay { position: fixed; background: rgba(3, 6, 12, 0.62); z-index: 90; pointer-events: none; }
+.tour-ring {
+  position: fixed;
+  z-index: 91;
+  border: 2px solid #2ec4b6;
+  border-radius: 14px;
+  box-shadow: 0 0 0 3px rgba(46, 196, 182, 0.25), 0 0 24px rgba(46, 196, 182, 0.35);
+  pointer-events: none;
+  transition: all .18s ease;
+}
+.tour-card {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  z-index: 92;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid rgba(46, 196, 182, 0.45);
+  box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.8);
+}
+.tour-face { flex: 0 0 56px; width: 56px; height: 56px; }
+.tour-face svg { width: 56px; height: 56px; display: block; }
+.tour-body { flex: 1; min-width: 0; }
+.tour-title { font-size: 15px; font-weight: 750; }
+.tour-text { font-size: 12.5px; color: var(--text-2); line-height: 1.45; margin-top: 3px; }
+.tour-nav { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.tour-count { flex: 1; font-size: 11px; color: var(--text-3); }
+
+/* во время экскурсии кнопка персонажа не мешает */
+body.tour-on .mentor-fab { display: none; }
+
 </style>
     <style>
 /* ===================== СТИЛИ ИНТЕРФЕЙСА ================================
@@ -4950,6 +5030,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       </button>
     </div>
 
+    <div id="mentorHost"></div>
     <div class="sheet-host" id="sheetHost" hidden></div>
     <div class="lock-host" id="lockHost" hidden></div>
     <div class="toast-host" id="toastHost" role="status" aria-live="polite"></div>
@@ -9983,6 +10064,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       )}<span>Карточка</span></button>` +
       `</section>` +
 
+      (MF.mentor && MF.mentor.inviteHtml ? MF.mentor.inviteHtml() : '') +
       quickCard() +
       paydayCard() +
       (MF.remind && MF.remind.cardHtml ? MF.remind.cardHtml() : '') +
@@ -11378,6 +11460,10 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `<button class="${MF.prefs.seasonalIcon === false ? 'active' : ''}" data-action="seasonal-set" data-id="off">Выключить</button>` +
       `</div>` +
       `<div class="tiny" style="margin-top:6px">В декабре — праздничная иконка, в январе и феврале — зимняя.</div></div>` +
+      '<div class="field"><span class="field-label">Помощник</span>' +
+      '<button type="button" class="switch-row" data-action="' + (MF.prefs.mentor !== false ? 'mentor-off' : 'mentor-on') + '">' +
+      '<span>Персонаж-проводник Фин</span><span class="switch ' + (MF.prefs.mentor !== false ? 'on' : '') + '"><i></i></span></button>' +
+      '<div class="tiny" style="margin-top:6px">Показывает, где что находится, и отвечает на вопросы. Кнопка — слева внизу.</div></div>' +
       (MF.remind && MF.remind.settingsHtml ? MF.remind.settingsHtml() : '') +
       paydaySettings() +
       rulesSettings() +
@@ -18017,6 +18103,536 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
 
 </script>
     <script>
+/* js/mentor.js */
+/* =========================================================================
+   MoneyFlow — Фин, персонаж-проводник
+   Проводит экскурсию по приложению, подсказывает, где что лежит,
+   и отвечает на вопросы: и про приложение, и про ваши деньги.
+   ========================================================================= */
+(function (MF) {
+  const M = (MF.mentor = {});
+  const UI = MF.UI;
+  const esc = UI.esc;
+
+  M.name = 'Фин';
+  M.enabled = function () {
+    return MF.prefs.mentor !== false;
+  };
+
+  /* ------------------------- внешний вид ------------------------------- */
+  M.face = function (size) {
+    const tiers = { weapon: 0, armor: 1, helmet: 0, boots: 0, amulet: 0 };
+    const colors = { top: '#2ec4b6', bottom: '#17766f', cape: '#0d5a55' };
+    try {
+      return MF.avatar.render(tiers, colors, size || 64);
+    } catch (e) {
+      return '';
+    }
+  };
+
+  /* --------------------- знания о приложении --------------------------- */
+  /* где что лежит: ответ + куда вести */
+  M.topics = [
+    {
+      re: /добав(ить|лю).*(трат|расход|доход|операц)|как записать|новая (трата|операц)/i,
+      title: 'Добавить операцию',
+      text: 'Нажмите «＋» внизу справа — откроется форма. Или на Обзоре есть блок «Быстрая запись»: введите сумму и тапните категорию.',
+      view: 'dashboard',
+      action: 'open-add',
+      actionLabel: 'Открыть форму'
+    },
+    {
+      re: /цел(ь|и)|накоплен|копить|отложить на/i,
+      title: 'Цели',
+      text: 'Раздел «Цели» внизу. Там кнопка «＋ Цель»: название, сумма, дата. Можно включить автопополнение — процент с каждого дохода.',
+      view: 'goals',
+      actionLabel: 'Перейти в цели'
+    },
+    {
+      re: /бюджет|лимит/i,
+      title: 'Бюджет',
+      text: 'Раздел «Бюджет»: лимиты по категориям на месяц. Полоска показывает, сколько осталось. На Обзоре виден общий бюджет месяца.',
+      view: 'budget',
+      actionLabel: 'Открыть бюджет'
+    },
+    {
+      re: /аналит|график|отч[её]т|статистик|куда уход/i,
+      title: 'Анализ',
+      text: 'Раздел «Анализ»: слова, круги, динамика по месяцам. Там же «Куда уходят деньги» и сравнение с прошлым месяцем.',
+      view: 'analysis',
+      actionLabel: 'Открыть анализ'
+    },
+    {
+      re: /настройк|тема|язык|оформлен|шрифт|стиль/i,
+      title: 'Настройки',
+      text: 'Шестерёнка справа сверху. Там счета, категории, темы, стили, шрифты, язык, фон и резервная копия.',
+      view: 'settings',
+      actionLabel: 'Открыть настройки'
+    },
+    {
+      re: /копи|экспорт|бэкап|backup|сохранить данн|перенести/i,
+      title: 'Резервная копия',
+      text: 'Настройки → Данные → «Скачать копию». На новом устройстве — «Загрузить копию». Данные хранятся только на телефоне, копия — единственная страховка.',
+      view: 'settings',
+      actionLabel: 'К данным'
+    },
+    {
+      re: /долг|кредит|ипотек|займ/i,
+      title: 'Долги и кредиты',
+      text: 'Раздел «Долги»: добавьте кредит — посчитаем график, переплату и дату закрытия.',
+      view: 'debts',
+      actionLabel: 'Открыть долги'
+    },
+    {
+      re: /портфел|инвест|акци|облигац/i,
+      title: 'Портфель',
+      text: 'Раздел «Портфель»: активы и их доходность. Входит в общий баланс.',
+      view: 'portfolio',
+      actionLabel: 'Открыть портфель'
+    },
+    {
+      re: /платеж|подписк|календар|регулярн|списан/i,
+      title: 'Платежи',
+      text: 'Раздел «Платежи» — календарь регулярных списаний. Их же видно на Обзоре в блоке «Скоро списания».',
+      view: 'calendar',
+      actionLabel: 'Открыть платежи'
+    },
+    {
+      re: /импорт|выписк|csv|банк/i,
+      title: 'Импорт выписки',
+      text: 'Настройки → «Импорт выписки»: выберите CSV из интернет-банка. Категории подставятся по правилам — их можно настроить в Оформлении.',
+      view: 'settings',
+      actionLabel: 'К импорту'
+    },
+    {
+      re: /геро|уровень|прокачк|снаряжен|легендар/i,
+      title: 'Герой',
+      text: 'Раздел «Герой»: растёт от ваших операций, целей и достижений. Открывайте сундуки — из них падают вещи, редко — легендарные.',
+      view: 'hero',
+      actionLabel: 'К герою'
+    },
+    {
+      re: /серия|подряд|заход/i,
+      title: 'Серия заходов',
+      text: 'Огонёк в шапке Обзора — сколько дней подряд вы заходите. За 3, 7, 14, 30, 60 и 100 дней дают золото и опыт.',
+      view: 'dashboard',
+      actionLabel: 'На Обзор'
+    },
+    {
+      re: /простой режим|упрости|убрать лишн/i,
+      title: 'Простой режим',
+      text: 'Кнопка «Простой режим» на Обзоре оставляет только главное: баланс, «сегодня можно», бюджет и цели. Остальное — по кнопке «Показать всё».',
+      view: 'dashboard',
+      actionLabel: 'На Обзор'
+    },
+    {
+      re: /без интернет|офлайн|работает без/i,
+      title: 'Офлайн',
+      text: 'Приложение работает без интернета: всё считается на устройстве. Интернет нужен только чтобы открыть сайт в первый раз.',
+      view: 'settings',
+      actionLabel: 'Подробнее'
+    },
+    {
+      re: /семь|семейн|вдвоем|партнер|общий бюджет/i,
+      title: 'Семейный режим',
+      text: 'Настройки → «Семейный режим»: обмен копиями с партнёром. Данные объединяются без интернета, дубликаты не появляются.',
+      view: 'settings',
+      actionLabel: 'Настроить'
+    },
+    {
+      re: /уведомлен|напомин|пуш/i,
+      title: 'Напоминания',
+      text: 'Настройки → «Напоминания». Приложение предупредит о платежах. На iPhone уведомления работают с iOS 16.4 и после установки на экран «Домой».',
+      view: 'settings',
+      actionLabel: 'Настроить'
+    },
+    {
+      re: /язык|english|английск|перевод/i,
+      title: 'Язык',
+      text: 'Настройки → Оформление → «Язык интерфейса»: русский, английский, испанский, немецкий, французский, китайский.',
+      view: 'settings',
+      actionLabel: 'Сменить язык'
+    },
+    {
+      re: /фон|обложк|картинк/i,
+      title: 'Фон',
+      text: 'Настройки → Оформление → «Фон приложения»: 18 готовых обложек или своя картинка. Картинка сжимается на телефоне и никуда не уходит.',
+      view: 'settings',
+      actionLabel: 'Выбрать фон'
+    },
+    {
+      re: /пароль|pin|защит|скрыть/i,
+      title: 'Защита',
+      text: 'Настройки → «PIN-код»: приложение спросит код при запуске. Код хранится только на устройстве.',
+      view: 'settings',
+      actionLabel: 'К настройкам'
+    },
+    {
+      re: /что (ты )?умеешь|помощ|как пользов|с чего начать|обуч|экскурс/i,
+      title: 'Что я умею',
+      text: 'Могу провести экскурсию по приложению, подсказать где что лежит и ответить про ваши деньги: «сколько ушло на кафе», «где перерасход».',
+      view: 'dashboard',
+      actionLabel: 'Начать экскурсию',
+      tour: true
+    }
+  ];
+
+  /* --------------------------- ответы ---------------------------------- */
+  M.answer = function (question) {
+    const q = String(question || '').trim();
+    if (!q) return { text: 'Спросите что-нибудь — например, «где добавить трату».', chips: M.quick() };
+
+    for (const t of M.topics) {
+      if (t.re.test(q)) {
+        return {
+          text: t.text,
+          title: t.title,
+          view: t.view,
+          action: t.action,
+          actionLabel: t.actionLabel,
+          tour: !!t.tour
+        };
+      }
+    }
+
+    /* вопросы про деньги — отдаём вычислителю */
+    if (MF.ai && MF.ai.ask) {
+      try {
+        const r = MF.ai.ask(q);
+        if (r && r.kind && r.kind !== 'unknown') {
+          return {
+            text: (r.title ? r.title + ': ' : '') + r.value + (r.sub ? '. ' + r.sub : ''),
+            title: 'По вашим данным',
+            money: true
+          };
+        }
+      } catch (e) {}
+    }
+
+    return {
+      text:
+        'Пока не понял. Я хорошо знаю само приложение: спросите «где добавить трату», «как поставить цель», ' +
+        '«где резервная копия». И считаю по вашим данным: «сколько ушло на кафе за месяц».',
+      chips: M.quick()
+    };
+  };
+
+  M.quick = function () {
+    return ['Где добавить трату?', 'Как поставить цель?', 'Где копия данных?', 'Сколько ушло на кафе?'];
+  };
+
+  /* --------------------------- экскурсия ------------------------------- */
+  M.steps = [
+    {
+      sel: '.screen-head',
+      title: 'Это Обзор',
+      text: 'Главный экран: баланс, сегодняшние траты и цели. Сюда вы попадаете при запуске.',
+      view: 'dashboard'
+    },
+    {
+      sel: '.hero',
+      title: 'Всего на счетах',
+      text: 'Сумма по всем счетам сразу. Цифры под ней — сколько отложено в цели и в портфеле.',
+      view: 'dashboard'
+    },
+    {
+      sel: '.safe-card',
+      title: 'Сегодня можно',
+      text: 'Сколько безопасно потратить сегодня, чтобы дожить до конца месяца.',
+      view: 'dashboard'
+    },
+    {
+      sel: '#tabbar',
+      title: 'Разделы',
+      text: 'Внизу — переходы: операции, бюджет, цели, долги, портфель. Набор можно изменить в настройках.',
+      view: 'dashboard'
+    },
+    {
+      sel: '#fab',
+      title: 'Добавить',
+      text: 'Кнопка «＋» — новая трата или доход. Самое частое действие, поэтому она всегда под рукой.',
+      view: 'dashboard'
+    },
+    {
+      sel: '.hero-mini',
+      title: 'Герой',
+      text: 'Растёт, когда вы ведёте учёт. Открывайте сундуки — попадаются вещи, иногда легендарные.',
+      view: 'dashboard'
+    },
+    {
+      sel: '.streak-pill',
+      title: 'Серия',
+      text: 'Дни подряд с приложением. За длинную серию дают золото и опыт.',
+      view: 'dashboard'
+    },
+    {
+      sel: '.settings-btn, [data-action="nav"][data-view="settings"]',
+      title: 'Настройки',
+      text: 'Счета, категории, темы, язык, резервная копия. Шестерёнка справа сверху.',
+      view: 'dashboard'
+    }
+  ];
+
+  let tourIndex = 0;
+  let tourOn = false;
+
+  function clearTour() {
+    document.body.classList.remove('tour-on');
+    document.querySelectorAll('.tour-overlay, .tour-ring, .tour-card').forEach(function (el) {
+      el.remove();
+    });
+  }
+
+  function showStep() {
+    clearTour();
+    const step = M.steps[tourIndex];
+    if (!step) {
+      M.stopTour(true);
+      return;
+    }
+
+    if (step.view && MF.prefs.view !== step.view) {
+      MF.App.go(step.view);
+      MF.App.render();
+    }
+
+    const target = document.querySelectorAll(step.sel)[0];
+    const rect = target ? target.getBoundingClientRect() : null;
+    const pad = 6;
+
+    if (rect && rect.width > 0) {
+      const ring = document.createElement('div');
+      ring.className = 'tour-ring';
+      ring.style.cssText =
+        'left:' + (rect.left - pad) + 'px;top:' + (rect.top - pad) + 'px;' +
+        'width:' + (rect.width + pad * 2) + 'px;height:' + (rect.height + pad * 2) + 'px;';
+      document.body.appendChild(ring);
+
+      /* затемнение вокруг цели: четыре прямоугольника */
+      const hole = { l: rect.left - pad, t: rect.top - pad, r: rect.right + pad, b: rect.bottom + pad };
+      const shade = 'rgba(3,6,12,.62)';
+      const parts = [
+        [0, 0, window.innerWidth, hole.t],
+        [0, hole.b, window.innerWidth, window.innerHeight - hole.b],
+        [0, hole.t, hole.l, hole.b - hole.t],
+        [hole.r, hole.t, window.innerWidth - hole.r, hole.b - hole.t]
+      ];
+      parts.forEach(function (p) {
+        if (p[2] <= 0 || p[3] <= 0) return;
+        const el = document.createElement('div');
+        el.className = 'tour-overlay';
+        el.style.cssText = 'left:' + p[0] + 'px;top:' + p[1] + 'px;width:' + p[2] + 'px;height:' + p[3] + 'px;';
+        document.body.appendChild(el);
+      });
+    }
+
+    const card = document.createElement('div');
+    card.className = 'tour-card';
+    const below = rect && rect.bottom + 190 < window.innerHeight;
+    card.style.cssText = rect
+      ? 'top:' + (below ? rect.bottom + 14 : Math.max(12, rect.top - 190)) + 'px;'
+      : 'top:40%;';
+    card.innerHTML =
+      '<div class="tour-face">' + M.face(56) + '</div>' +
+      '<div class="tour-body">' +
+      '<div class="tour-title">' + esc(step.title) + '</div>' +
+      '<div class="tour-text">' + esc(step.text) + '</div>' +
+      '<div class="tour-nav">' +
+      '<span class="tour-count">' + (tourIndex + 1) + ' / ' + M.steps.length + '</span>' +
+      '<button class="btn btn-ghost btn-sm" data-action="mentor-stop">Хватит</button>' +
+      '<button class="btn btn-primary btn-sm" data-action="mentor-next">' +
+      (tourIndex + 1 === M.steps.length ? 'Готово' : 'Дальше') +
+      '</button>' +
+      '</div></div>';
+    document.body.appendChild(card);
+  }
+
+  M.startTour = function () {
+    if (!M.enabled()) return;
+    tourOn = true;
+    tourIndex = 0;
+    document.body.classList.add('tour-on');
+    if (MF.prefs.view !== 'dashboard') {
+      MF.App.go('dashboard');
+      MF.App.render();
+    }
+    setTimeout(showStep, 120);
+  };
+
+  M.next = function () {
+    if (!tourOn) return;
+    tourIndex++;
+    if (tourIndex >= M.steps.length) {
+      M.stopTour(true);
+      return;
+    }
+    showStep();
+  };
+
+  M.stopTour = function (done) {
+    tourOn = false;
+    clearTour();
+    if (done) {
+      MF.prefs.mentorTourDone = true;
+      MF.savePrefs();
+      UI.toast('Экскурсия закончена. Спросите меня о чём угодно 🔎', 'good');
+    }
+  };
+
+  M.touring = function () {
+    return tourOn;
+  };
+
+  /* --------------------------- панель ---------------------------------- */
+  M.log = [];
+
+  M.panel = function () {
+    const rows = M.log
+      .map(function (m) {
+        if (m.role === 'user') {
+          return '<div class="chat-row me"><div class="chat-bubble me">' + esc(m.text) + '</div></div>';
+        }
+        return (
+          '<div class="chat-row"><div class="chat-bubble bot">' +
+          (m.title ? '<div class="chat-title">' + esc(m.title) + '</div>' : '') +
+          '<div class="chat-text">' + esc(m.text) + '</div>' +
+          (m.view || m.tour
+            ? '<button class="btn btn-ghost btn-sm" data-action="mentor-go" data-view="' + (m.view || 'dashboard') + '" ' +
+              (m.action ? 'data-do="' + m.action + '" ' : '') +
+              (m.tour ? 'data-tour="1" ' : '') +
+              'style="margin-top:8px">' + esc(m.actionLabel || 'Показать') + '</button>'
+            : '') +
+          '</div></div>'
+        );
+      })
+      .join('');
+
+    const chips = M.quick()
+      .map(function (q) {
+        return '<button class="chip" data-action="mentor-quick" data-id="' + esc(q) + '">' + esc(q) + '</button>';
+      })
+      .join('');
+
+    UI.sheet({
+      title: 'Фин — ваш проводник',
+      subtitle: 'подскажет, где что лежит, и ответит на вопросы',
+      body:
+        '<div class="mentor-head">' +
+        '<div class="mentor-face">' + M.face(72) + '</div>' +
+        '<div class="mentor-say">Привет! Я Фин. Могу провести экскурсию по приложению или просто ответить на вопрос.</div>' +
+        '</div>' +
+        (rows ? '<div class="chat-list mentor-log">' + rows + '</div>' : '') +
+        '<div class="chat-chips">' + chips + '</div>' +
+        '<div class="chat-input-wrap">' +
+        '<input id="mentorInput" class="input" placeholder="Спросите: где добавить трату?" autocomplete="off">' +
+        '<button class="btn btn-primary" data-action="mentor-send">' + UI.icon('right', '', 16) + '</button>' +
+        '</div>' +
+        '<div class="row-between" style="margin-top:10px">' +
+        '<button class="btn btn-ghost btn-sm" data-action="mentor-tour">Пройти экскурсию</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="mentor-off">Отключить помощника</button>' +
+        '</div>',
+      wide: true
+    });
+  };
+
+  M.open = function () {
+    if (!M.log.length) {
+      M.log.push({
+        role: 'bot',
+        text: 'Могу показать, где что находится, и ответить про ваши деньги. С чего начнём?'
+      });
+    }
+    M.panel();
+  };
+
+  M.send = function (text) {
+    const q = String(text || '').trim();
+    if (!q) return;
+    M.log.push({ role: 'user', text: q });
+    const a = M.answer(q);
+    M.log.push(
+      Object.assign({ role: 'bot' }, a, {
+        actionLabel: a.actionLabel || (a.view ? 'Показать' : '')
+      })
+    );
+    if (M.log.length > 40) M.log = M.log.slice(-40);
+    M.panel();
+    setTimeout(function () {
+      const box = document.querySelector('.mentor-log');
+      if (box) box.scrollTop = box.scrollHeight;
+    }, 30);
+  };
+
+  M.sendFromInput = function () {
+    const input = document.getElementById('mentorInput');
+    if (!input) return;
+    const v = input.value;
+    input.value = '';
+    M.send(v);
+  };
+
+  M.go = function (view, action, tour) {
+    UI.closeSheet();
+    if (tour) {
+      M.startTour();
+      return;
+    }
+    if (view) {
+      MF.App.go(view);
+      MF.App.render();
+    }
+    if (action && MF.App && MF.App.actions && MF.App.actions[action]) {
+      setTimeout(function () {
+        try {
+          MF.App.actions[action]();
+        } catch (e) {}
+      }, 150);
+    }
+  };
+
+  M.disable = function () {
+    MF.prefs.mentor = false;
+    MF.savePrefs();
+    UI.closeSheet();
+    UI.toast('Помощник отключён. Включить — в настройках', '');
+    MF.App.render({ quick: true });
+  };
+
+  M.enable = function () {
+    MF.prefs.mentor = true;
+    MF.savePrefs();
+    UI.toast('Помощник включён', 'good');
+    MF.App.render({ quick: true });
+  };
+
+  /* плавающая кнопка */
+  M.bubbleHtml = function () {
+    if (!M.enabled()) return '';
+    return (
+      '<button class="mentor-fab" data-action="mentor-open" aria-label="Спросить Фина" title="Спросить Фина">' +
+      '<span class="mentor-fab-face">' + M.face(38) + '</span>' +
+      '</button>'
+    );
+  };
+
+  /* приглашение на Обзоре — пока экскурсия не пройдена */
+  M.inviteHtml = function () {
+    if (!M.enabled() || MF.prefs.mentorTourDone) return '';
+    return (
+      '<div class="card mentor-invite" data-action="mentor-tour" style="cursor:pointer">' +
+      '<div class="mi-face">' + M.face(58) + '</div>' +
+      '<div class="mi-body">' +
+      '<div class="mi-title">Не знаете, с чего начать?</div>' +
+      '<div class="mi-text">Фин покажет, где что находится — 8 шагов, меньше минуты.</div>' +
+      '</div>' +
+      '<span class="mi-go">›</span>' +
+      '</div>'
+    );
+  };
+})(window.MF);
+
+</script>
+    <script>
 /* js/weekly.js */
 /* =========================================================================
    MoneyFlow — недельный отчёт-картинка
@@ -19758,6 +20374,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     { id: 'payday', name: 'До зарплаты' },
     { id: 'remind', name: 'Скоро списания' },
     { id: 'quick', name: 'Быстрая запись' },
+    { id: 'mentor', name: 'Знакомство с Фином' },
     { id: 'budget', name: 'Бюджет и счета' },
     { id: 'goals', name: 'Цели' },
     { id: 'smart', name: 'Умный расчёт' },
@@ -19832,6 +20449,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     if (cls.indexOf('payday-card') >= 0) return 'payday';
     if (cls.indexOf('remind-card') >= 0) return 'remind';
     if (cls.indexOf('quick-card') >= 0) return 'quick';
+    if (cls.indexOf('mentor-invite') >= 0) return 'mentor';
     if (cls.indexOf('challenge-card') >= 0) return 'challenge';
     if (cls.indexOf('goal-scroll') >= 0) return 'goals';
     if (cls.indexOf('sec-head') >= 0) return 'goals';
@@ -20448,6 +21066,12 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     return MF.i18n.t(text);
   }
 
+  function mountMentor() {
+    const box = document.getElementById('mentorHost');
+    if (!box || !MF.mentor) return;
+    box.innerHTML = MF.mentor.bubbleHtml();
+  }
+
   function translateChrome() {
     if (!MF.i18n || MF.i18n.current() === 'ru') return;
     try {
@@ -20492,6 +21116,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     if (MF.looks && MF.looks.apply) MF.looks.apply();
     if (MF.custom && MF.custom.apply) MF.custom.apply();
     if (MF.i18n && MF.i18n.applyDom) MF.i18n.applyDom(host);
+    mountMentor();
     if (MF.first) MF.first.applySeason();
     if (MF.quick && MF.quick.bindSearch) MF.quick.bindSearch();
 
@@ -20721,6 +21346,15 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     'family-export': () => MF.family.exportForPartner(),
     'family-join': () => MF.family.openJoin(),
     'family-apply': () => MF.family.apply(),
+    'mentor-open': () => MF.mentor.open(),
+    'mentor-send': () => MF.mentor.sendFromInput(),
+    'mentor-quick': (el) => MF.mentor.send(el.dataset.id),
+    'mentor-tour': () => MF.mentor.startTour(),
+    'mentor-next': () => MF.mentor.next(),
+    'mentor-stop': () => MF.mentor.stopTour(),
+    'mentor-off': () => MF.mentor.disable(),
+    'mentor-on': () => MF.mentor.enable(),
+    'mentor-go': (el) => MF.mentor.go(el.dataset.view, el.dataset.do, el.dataset.tour === '1'),
     'remind-ask': () => MF.remind.ask(),
     'remind-toggle': () => MF.remind.toggle(),
     'payday-edit': () => MF.App.go('settings'),
@@ -21059,6 +21693,12 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   }
 
   function onKey(e) {
+    if (e.key === 'Enter' && e.target && e.target.id === 'mentorInput') {
+      e.preventDefault();
+      if (MF.mentor) MF.mentor.sendFromInput();
+      return;
+    }
+
     if (e.key === 'Escape') {
       const host = document.getElementById('sheetHost');
       if (host && !host.hidden) UI.closeSheet();
@@ -21141,6 +21781,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   }
   /* -------------------------------- запуск ------------------------------- */
   function boot() {
+    App.actions = actions;
     MF.load();
     MF.loadPrefs();
 
