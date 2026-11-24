@@ -4203,6 +4203,12 @@ body[data-season="spring"] .hero::after {
 .ctx-text { font-size: 12px; color: #d9c39a; line-height: 1.4; }
 .ctx-banner .btn { margin-top: 8px; }
 
+/* КРИТИЧНО: любой элемент с атрибутом hidden должен быть скрыт,
+   даже если у него в CSS задан display (иначе оверлеи перекрывают экран) */
+[hidden] { display: none !important; }
+
+.lock-host[hidden] { display: none !important; }
+
 </style>
   </head>
   <body>
@@ -16955,10 +16961,7 @@ body[data-season="spring"] .hero::after {
   function warnRestrictedContext() {
     const proto = String(location.protocol || '');
     const ua = String(navigator.userAgent || '');
-    const restricted =
-      proto === 'content:' ||
-      proto === 'file:' ||
-      /Telegram|VKWebApp|Instagram|FBAN|WhatsApp/i.test(ua);
+    const restricted = proto === 'content:' || /Telegram|VKWebApp|Instagram|FBAN|WhatsApp/i.test(ua);
 
     if (!restricted) return;
     if (document.getElementById('ctxBanner')) return;
@@ -17809,6 +17812,7 @@ body[data-season="spring"] .hero::after {
     boot();
   }
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
