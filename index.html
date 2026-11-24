@@ -10162,6 +10162,11 @@ body[data-season="spring"] .hero::after {
       `<span class="row-sub">Экспорт операций в CSV</span></span>` +
       `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       (MF.autobackup ? MF.autobackup.rowHtml() : '') +
+      `<div class="list-row" data-action="family-open" style="border-bottom:1px solid var(--line)">` +
+      `<span class="row-ico">👨‍👩‍👧</span>` +
+      `<span class="row-text"><span class="row-title">Семейный режим</span>` +
+      `<span class="row-sub">Общий бюджет через обмен копиями</span></span>` +
+      `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       `<div class="list-row" data-action="csv-import" style="border-bottom:1px solid var(--line)">` +
       `<span class="row-ico">${UI.icon('download', '', 17)}</span>` +
       `<span class="row-text"><span class="row-title">Импорт выписки</span>` +
@@ -10196,6 +10201,7 @@ body[data-season="spring"] .hero::after {
     );
   };
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
@@ -15273,6 +15279,217 @@ body[data-season="spring"] .hero::after {
 
 </script>
     <script>
+/* js/family.js */
+/* =========================================================================
+   MoneyFlow — семейный режим без сервера
+   Два человека обмениваются JSON-копиями, приложение объединяет данные по id.
+   Ничего никуда не отправляется: только файлы между устройствами.
+   ========================================================================= */
+(function (MF) {
+  const FM = (MF.family = {});
+  const UI = MF.UI;
+  const esc = (s) => UI.esc(s);
+
+  const KEYED = ['transactions', 'goals', 'loans', 'debts', 'accounts', 'categories', 'recurring'];
+
+  function byId(list) {
+    const map = {};
+    (list || []).forEach(function (item) {
+      if (item && item.id) map[item.id] = item;
+    });
+    return map;
+  }
+
+  function txKey(t) {
+    return [t.date, Math.round(Number(t.amount) * 100), t.type, t.accountId || '', String(t.note || '').trim().toLowerCase()].join('|');
+  }
+
+  /* объединяет два состояния: base — текущее, incoming — из файла */
+  FM.merge = function (base, incoming) {
+    if (!incoming || typeof incoming !== 'object') return { state: base, stats: {}, empty: true };
+
+    const out = JSON.parse(JSON.stringify(base || {}));
+    const stats = {};
+    let added = 0;
+
+    (KEYED || []).forEach(function (key) {
+      if (!Array.isArray(incoming[key])) return;
+      if (!Array.isArray(out[key])) out[key] = [];
+      const have = byId(out[key]);
+      const seenTx = {};
+      if (key === 'transactions') out[key].forEach(function (t) { seenTx[txKey(t)] = true; });
+
+      incoming[key].forEach(function (item) {
+        if (!item) return;
+        if (item.id && have[item.id]) {
+          /* уже есть — объединяем вложенные платежи, если они есть */
+          const target = have[item.id];
+          if (Array.isArray(item.payments) && Array.isArray(target.payments)) {
+            const pIds = {};
+            target.payments.forEach(function (p) { if (p && p.id) pIds[p.id] = true; });
+            item.payments.forEach(function (p) {
+              if (p && p.id && !pIds[p.id]) {
+                target.payments.push(p);
+                stats[key + '.payments'] = (stats[key + '.payments'] || 0) + 1;
+                added++;
+              }
+            });
+          }
+          return;
+        }
+        if (key === 'transactions') {
+          const k = txKey(item);
+          if (seenTx[k]) return;
+          seenTx[k] = true;
+        }
+        out[key].push(item);
+        if (item.id) have[item.id] = item;
+        stats[key] = (stats[key] || 0) + 1;
+        added++;
+      });
+    });
+
+    /* бюджеты по месяцам: объединяем лимиты, свои значения не теряем */
+    if (incoming.budgets && typeof incoming.budgets === 'object') {
+      out.budgets = out.budgets || {};
+      Object.keys(incoming.budgets).forEach(function (month) {
+        const src = incoming.budgets[month] || {};
+        const dst = out.budgets[month] || {};
+        const merged = {
+          total: dst.total || src.total || 0,
+          limits: Object.assign({}, src.limits || {}, dst.limits || {}),
+          reserve: dst.reserve || src.reserve || 0
+        };
+        out.budgets[month] = merged;
+      });
+    }
+
+    /* курсы валют: недостающие добавляем */
+    if (incoming.rates && typeof incoming.rates === 'object') {
+      out.rates = Object.assign({}, incoming.rates, out.rates || {});
+    }
+
+    return { state: out, stats: stats, added: added, empty: added === 0 };
+  };
+
+  function human(stats) {
+    const map = {
+      transactions: 'операций',
+      goals: 'целей',
+      loans: 'кредитов',
+      debts: 'долгов',
+      accounts: 'счетов',
+      categories: 'категорий',
+      recurring: 'регулярных платежей',
+      'loans.payments': 'платежей по кредитам',
+      'debts.payments': 'платежей по долгам'
+    };
+    return Object.keys(stats)
+      .filter(function (k) { return stats[k] > 0; })
+      .map(function (k) { return stats[k] + ' ' + (map[k] || k); })
+      .join(', ');
+  }
+
+  /* ------------------------------ экран -------------------------------- */
+  FM.open = function () {
+    UI.sheet({
+      title: 'Семейный режим',
+      subtitle: 'общий бюджет без сервера — через файлы',
+      body:
+        `<p class="tiny" style="margin-bottom:14px">Данные никуда не отправляются. Вы обмениваетесь копиями, ` +
+        `приложение объединяет записи по идентификаторам: повторного добавления не будет.</p>` +
+        `<div class="family-steps">` +
+        `<div class="fam-step"><b>1</b><span>Вы: «Поделиться копией» → отправьте файл партнёру</span></div>` +
+        `<div class="fam-step"><b>2</b><span>Партнёр: присылает вам свою копию</span></div>` +
+        `<div class="fam-step"><b>3</b><span>Вы: «Объединить с копией» → выберите его файл</span></div>` +
+        `</div>` +
+        `<div class="hint-row" id="familyHint">Пока ничего не выбрано</div>`,
+      footer:
+        `<button class="btn btn-ghost" data-action="family-export">Поделиться копией</button>` +
+        `<button class="btn btn-primary" data-action="family-join">Объединить с копией</button>`,
+      wide: true
+    });
+  };
+
+  FM.exportForPartner = function () {
+    const payload = JSON.parse(JSON.stringify(MF.state));
+    payload._family = { at: MF.todayISO(), app: 'MoneyFlow', version: 1 };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'moneyflow-для-семьи-' + MF.todayISO() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    MF.first.markBackup();
+    UI.toast('Копия сохранена — отправьте файл партнёру', 'good');
+  };
+
+  FM.openJoin = function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.addEventListener('change', function () {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        let data = null;
+        try {
+          data = JSON.parse(String(reader.result || ''));
+        } catch (e) {
+          UI.toast('Файл повреждён или это не копия MoneyFlow', 'bad');
+          return;
+        }
+        FM.preview(data, file.name);
+      };
+      reader.readAsText(file, 'utf-8');
+    });
+    input.click();
+  };
+
+  FM.preview = function (data, name) {
+    const res = FM.merge(MF.state, data);
+    const text = res.added ? human(res.stats) : 'новых записей нет';
+
+    UI.sheet({
+      title: 'Объединить данные',
+      subtitle: esc(name || 'файл'),
+      body:
+        `<div class="loot-box" style="border-color:rgba(124,140,255,.4)">` +
+        `<div class="loot-ico">👨‍👩‍👧</div>` +
+        `<div class="loot-name">${res.added ? '+' + res.added : 'нет новых'}</div>` +
+        `<div class="loot-sub">${esc(text)}</div>` +
+        `</div>` +
+        `<p class="tiny" style="margin-top:12px">Ваши записи не изменятся: добавляются только те, которых у вас нет. ` +
+        `Совпадающие по id и по дате-сумме-описанию пропускаются.</p>`,
+      footer:
+        `<button class="btn btn-ghost" data-action="sheet-close">Отмена</button>` +
+        `<button class="btn btn-primary" data-action="family-apply" ${res.added ? '' : 'disabled'}>Объединить</button>`,
+      wide: true
+    });
+
+    FM.pending = res;
+  };
+
+  FM.apply = function () {
+    if (!FM.pending || !FM.pending.added) {
+      UI.toast('Нечего объединять', '');
+      return;
+    }
+    MF.setState(FM.pending.state);
+    const added = FM.pending.added;
+    FM.pending = null;
+    UI.closeSheet();
+    UI.toast('Объединено: ' + added + ' записей', 'good');
+    if (MF.App && MF.App.render) MF.App.render();
+  };
+})(window.MF);
+
+</script>
+    <script>
 /* js/csv.js */
 /* =========================================================================
    MoneyFlow — импорт выписки CSV
@@ -17152,7 +17369,10 @@ body[data-season="spring"] .hero::after {
       render();
       UI.toast('Автобэкап выключен', '');
     },
-    'report-open': () => MF.report.open(),
+    'family-open': () => MF.family.open(),
+    'family-export': () => MF.family.exportForPartner(),
+    'family-join': () => MF.family.openJoin(),
+    'family-apply': () => MF.family.apply(),    'report-open': () => MF.report.open(),
     'csv-import': () => MF.csv.openImport(),
     'csv-save': () => MF.csv.save(),
     'tpl-apply': (el) => MF.quick.applyTemplate(el.dataset.id),
@@ -17633,6 +17853,7 @@ body[data-season="spring"] .hero::after {
 
 
 
+
 </script>
   <script>
 /* js/photos.js */
@@ -17737,6 +17958,7 @@ body[data-season="spring"] .hero::after {
 </script>
 </body>
 </html>
+
 
 
 
