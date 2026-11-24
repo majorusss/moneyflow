@@ -580,7 +580,7 @@ button {
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
-  animation: fadeUp 0.4s both;
+  animation: fadeUp 0.4s forwards;
 }
 
 .card-head {
@@ -633,7 +633,7 @@ button {
     radial-gradient(110% 110% at 100% 0%, color-mix(in srgb, var(--accent-2) 26%, transparent), transparent 55%),
     linear-gradient(180deg, var(--surface-2), var(--surface));
   box-shadow: 0 30px 60px -40px color-mix(in srgb, var(--accent) 60%, transparent);
-  animation: fadeUp 0.45s both;
+  animation: fadeUp 0.45s forwards;
 }
 
 [data-theme="light"] .hero {
@@ -980,7 +980,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
-  animation: fadeUp 0.45s both;
+  animation: fadeUp 0.45s forwards;
 }
 
 .stat-label {
@@ -4154,6 +4154,7 @@ body[data-season="spring"] .hero::after {
 .boot-fail p { margin: 0; max-width: 340px; color: var(--text-2, #a3b0c4); font-size: 13.5px; }
 .boot-fail .btn { display: inline-block; padding: 11px 18px; border-radius: 12px; text-decoration: none; }
 .boot-fail .tiny { font-size: 12px; color: var(--text-3, #6d7b90); }
+
 
 </style>
   </head>
@@ -8691,6 +8692,12 @@ body[data-season="spring"] .hero::after {
           `<span class="head-note">${s.count} ${MF.plural(s.count, 'операция', 'операции', 'операций')}</span>`
       }) +
 
+      (MF.first && !MF.prefs.onboarded && !(MF.state.transactions || []).length
+        ? `<div class="card ob-card" data-action="welcome" style="margin-top:12px;cursor:pointer">` +
+          `<div class="card-head"><span class="card-title">👋 Добро пожаловать</span>` +
+          `<span class="card-link">Начать</span></div>` +
+          `<p class="tiny">Настройка за минуту — или посмотрите приложение на демо-данных.</p></div>`
+        : '') +
       (MF.first && !MF.prefs.onboarded
         ? `<div class="card ob-card" data-action="onboarding" style="margin-top:12px;cursor:pointer">` +
           `<div class="card-head"><span class="card-title">✨ Настройка за минуту</span>` +
@@ -10201,6 +10208,7 @@ body[data-season="spring"] .hero::after {
     );
   };
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
@@ -14719,6 +14727,30 @@ body[data-season="spring"] .hero::after {
   const UI = MF.UI;
   const esc = (s) => UI.esc(s);
 
+  /* приветствие при самом первом запуске: два понятных пути */
+  F.welcome = function () {
+    UI.sheet({
+      title: 'MoneyFlow',
+      subtitle: 'траты, доходы и цели — всё на этом устройстве',
+      body:
+        `<div class="onboard-hero">💰</div>` +
+        `<p class="tiny" style="text-align:center;margin-bottom:16px">` +
+        `Приложение работает без интернета, данные не уходят на сервер.</p>` +
+        `<button class="btn btn-primary btn-block" data-action="onboarding">Настроить за минуту</button>` +
+        `<button class="btn btn-ghost btn-block" style="margin-top:8px" data-action="welcome-demo">Посмотреть на демо-данных</button>` +
+        `<p class="tiny" style="text-align:center;margin-top:14px">Демо-данные можно удалить в любой момент: Настройки → Данные.</p>`,
+      wide: true
+    });
+  };
+
+  F.welcomeDemo = function () {
+    MF.resetToDemo();
+    MF.prefs.onboarded = true;
+    MF.savePrefs();
+    UI.closeSheet();
+    if (MF.App && MF.App.render) MF.App.render();
+    UI.toast('Демо-данные загружены', 'good');
+  };
   /* ------------------------- онбординг --------------------------------- */
   F.openOnboarding = function (step) {
     step = step || 1;
@@ -14948,6 +14980,8 @@ body[data-season="spring"] .hero::after {
     document.body.dataset.season = F.season();
   };
 })(window.MF);
+
+
 
 
 </script>
@@ -17339,6 +17373,8 @@ body[data-season="spring"] .hero::after {
     'ob-currency': (el) => MF.first.obCurrency(el.dataset.id),
     'ob-cat': (el) => MF.first.obCat(el.dataset.id),
     'onboarding': () => MF.first.openOnboarding(1),
+    'welcome': () => MF.first.welcome(),
+    'welcome-demo': () => MF.first.welcomeDemo(),
     'backup-now': () => {
       MF.exportJSON();
       MF.first.markBackup();
@@ -17821,6 +17857,7 @@ body[data-season="spring"] .hero::after {
     boot();
   }
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
