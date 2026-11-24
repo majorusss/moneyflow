@@ -1,0 +1,59 @@
+{
+  "id": "./",
+  "name": "MoneyFlow — траты, доходы и цели",
+  "short_name": "MoneyFlow",
+  "description": "Учёт расходов и доходов по категориям, бюджеты, накопления на цели и контроль неожиданных трат.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#080b11",
+  "theme_color": "#080b11",
+  "categories": [
+    "finance",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Добавить трату",
+      "short_name": "Трата",
+      "url": "./index.html#/tx"
+    },
+    {
+      "name": "Помощник",
+      "short_name": "Помощник",
+      "url": "./index.html#/ask"
+    },
+    {
+      "name": "Платежи",
+      "short_name": "Платежи",
+      "url": "./index.html#/calendar"
+    }
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

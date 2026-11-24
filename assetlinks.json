@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.netlify.dreamy_swan_8b7fc3.twa",
+      "sha256_cert_fingerprints": ["ВСТАВЬТЕ_СЮДА_ОТПЕЧАТОК_ИЗ_PWABUILDER"]
+    }
+  }
+]
