@@ -4583,6 +4583,43 @@ html[data-nums="on"] .amount {
 
 .lang-flag { font-size: 16px; }
 
+/* --------------------- новые блоки ------------------------------- */
+.payday-card { margin-top: 12px; }
+.payday-sum { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+.payday-per { font-size: 13px; font-weight: 600; color: var(--text-3); margin-left: 8px; letter-spacing: 0; }
+.payday-meta { font-size: 11.5px; color: var(--text-2); margin-top: 4px; }
+
+.remind-card { margin-top: 12px; }
+.rem-row { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.rem-row:last-of-type { border-bottom: 0; }
+.rem-ico { font-size: 16px; width: 22px; text-align: center; }
+.rem-name { flex: 1; font-size: 13.5px; min-width: 0; }
+.rem-when { display: block; font-size: 10.5px; color: var(--text-3); }
+.rem-sum { font-size: 13px; font-weight: 700; color: var(--amber); }
+
+.quick-card { margin-top: 12px; }
+.quick-row { display: flex; align-items: center; gap: 8px; }
+.quick-input { font-size: 22px; font-weight: 800; text-align: right; letter-spacing: -0.02em; }
+.quick-cur { font-size: 16px; color: var(--text-3); font-weight: 700; }
+.quick-cats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+.quick-cat {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 2px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--text-2); cursor: pointer;
+}
+.quick-cat:active { border-color: var(--accent); }
+.qc-ico { font-size: 17px; }
+.qc-name { font-size: 8.5px; line-height: 1.1; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
+.rule-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.rule-pat { font-weight: 600; }
+.rule-arrow { color: var(--text-3); }
+.rule-cat { flex: 1; color: var(--text-2); }
+.rule-del { background: none; border: 0; color: var(--text-3); font-size: 13px; cursor: pointer; padding: 4px 6px; }
+.rule-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-top: 10px; }
+
+.week-shot { width: 100%; border-radius: 14px; display: block; }
+
 </style>
     <style>
 /* ===================== СТИЛИ ИНТЕРФЕЙСА ================================
@@ -5810,13 +5847,44 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     return state;
   }
 
+  /* пакетный режим: во время массовых операций пишем один раз */
+  let suspendDepth = 0;
+  let pendingSave = false;
+
+  MF.batch = function (fn) {
+    suspendDepth++;
+    try {
+      return fn();
+    } finally {
+      suspendDepth--;
+      if (suspendDepth === 0 && pendingSave) {
+        pendingSave = false;
+        save();
+      }
+    }
+  };
+
   function save() {
+    if (suspendDepth > 0) {
+      pendingSave = true;
+      return state;
+    }
+
     let json = '';
     try {
       json = JSON.stringify(state);
       writeRaw(STATE_KEY, json);
     } catch (e) {
-      /* хранилище может быть переполнено — не роняем приложение */
+      /* хранилище переполнено — не роняем приложение, но предупреждаем один раз */
+      MF.storageFull = true;
+      if (!MF.storageWarned) {
+        MF.storageWarned = true;
+        try {
+          if (MF.UI && MF.UI.toast) {
+            MF.UI.toast('Мало места: сделайте резервную копию в настройках', 'bad');
+          }
+        } catch (err) {}
+      }
     }
     /* копия в IndexedDB: переживает очистку localStorage */
     if (json && MF.idb && MF.idb.persist) {
@@ -6082,10 +6150,47 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   }
 
   /* ------------------------------- CRUD ------------------------------- */
+  /* процент с дохода автоматически уходит в цели */
+  function applyGoalAuto(tx) {
+    if (!tx || tx.type !== 'income') return 0;
+    const amount = Number(tx.amount) || 0;
+    if (amount <= 0) return 0;
+
+    let moved = 0;
+    (state.goals || []).forEach((g) => {
+      const pct = Number(g.autoPercent) || 0;
+      if (pct <= 0) return;
+      const target = Number(g.target) || 0;
+      const saved = goalSaved(g);
+      if (target > 0 && saved >= target) return;
+      let part = Math.round(((amount * pct) / 100) * 100) / 100;
+      if (target > 0) part = Math.min(part, Math.max(0, target - saved));
+      if (part <= 0) return;
+      g.contributions = g.contributions || [];
+      g.contributions.push({
+        id: uid('g'),
+        amount: part,
+        at: todayISO(),
+        note: 'авто ' + pct + '%',
+        auto: true
+      });
+      moved += part;
+    });
+
+    if (moved > 0) save();
+    return moved;
+  }
+
   function addTx(tx) {
     const item = normalizeTx(tx);
     state.transactions.push(item);
+    const moved = applyGoalAuto(item);
     save();
+    if (moved > 0 && MF.App && MF.App.render) {
+      try {
+        MF.UI.toast('В цели отложено ' + MF.money(moved, { short: true }), 'good');
+      } catch (e) {}
+    }
     return item;
   }
   function normalizeTx(tx) {
@@ -9592,6 +9697,76 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `</div>`
     );
   }
+  /* быстрая запись траты в два касания */
+  function quickCard() {
+    const cats = (MF.state.categories || []).filter(function (c) {
+      return c.kind !== 'income';
+    });
+
+    /* сначала самые частые за последние 60 дней */
+    const usage = {};
+    const from = MF.payday ? MF.payday.shift(MF.todayISO(), -60) : '';
+    (MF.state.transactions || []).forEach(function (t) {
+      if (t.type !== 'expense') return;
+      if (from && String(t.date).slice(0, 10) < from) return;
+      usage[t.categoryId] = (usage[t.categoryId] || 0) + 1;
+    });
+
+    const sorted = cats
+      .slice()
+      .sort(function (a, b) {
+        return (usage[b.id] || 0) - (usage[a.id] || 0);
+      })
+      .slice(0, 6);
+
+    if (!sorted.length) return '';
+
+    return (
+      '<div class="card quick-card">' +
+      '<div class="card-head"><span class="card-title">⚡ Быстрая запись</span>' +
+      '<span class="card-link">сумма → категория</span></div>' +
+      '<div class="quick-row">' +
+      '<input class="input quick-input" id="quickAmount" inputmode="decimal" placeholder="0" autocomplete="off">' +
+      '<span class="quick-cur">' + (MF.currency ? (MF.currency(MF.baseCode()).symbol || '₽') : '₽') + '</span>' +
+      '</div>' +
+      '<div class="quick-cats">' +
+      sorted
+        .map(function (c) {
+          return (
+            '<button class="quick-cat" data-action="quick-save" data-id="' + c.id + '" title="' + esc(c.name) + '">' +
+            '<span class="qc-ico">' + c.icon + '</span><span class="qc-name">' + esc(c.name) + '</span></button>'
+          );
+        })
+        .join('') +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  /* сколько можно тратить до следующего дохода */
+  function paydayCard() {
+    if (!MF.payday) return '';
+    let p = null;
+    try {
+      p = MF.payday.safeToSpend();
+    } catch (e) {
+      return '';
+    }
+    if (!p || !p.daysLeft) return '';
+
+    const perDayText = MF.money(Math.round(p.perDay), { short: true });
+    return (
+      '<div class="card payday-card" data-action="payday-edit">' +
+      '<div class="card-head"><span class="card-title">До зарплаты</span>' +
+      '<span class="card-link">' + p.daysLeft + ' ' + MF.plural(p.daysLeft, 'день', 'дня', 'дней') + '</span></div>' +
+      '<div class="payday-sum">' + perDayText + '<span class="payday-per">в день</span></div>' +
+      '<div class="payday-meta">Свободно ' + MF.money(p.free, { short: true }) +
+      (p.planned > 0 ? ' · запланировано ' + MF.money(p.planned, { short: true }) : '') +
+      ' · доход ' + String(p.next).slice(8, 10) + '.' + String(p.next).slice(5, 7) + '</div>' +
+      '</div>'
+    );
+  }
+
   /* серия заходов в шапке Обзора */
   function streakPill() {
     if (!MF.hero || !MF.hero.visitInfo) return '';
@@ -9612,6 +9787,68 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       '<button class="streak-pill" data-action="nav" data-view="hero" title="' + esc(title) + '">' +
       '<span class="sp-fire">🔥</span><span class="sp-num">' + info.streak + '</span>' +
       '</button>'
+    );
+  }
+
+  /* день зарплаты */
+  function paydaySettings() {
+    const day = MF.payday ? MF.payday.payDay() : 10;
+    const options = [];
+    for (let d = 1; d <= 31; d++) options.push(d);
+    return (
+      '<div class="field"><span class="field-label">Зарплата</span>' +
+      '<div class="row-between"><span class="tiny">День месяца</span>' +
+      '<select class="input input-sm" data-action="payday-set">' +
+      options
+        .map(function (d) {
+          return '<option value="' + d + '"' + (d === day ? ' selected' : '') + '>' + d + '</option>';
+        })
+        .join('') +
+      '</select></div>' +
+      '<div class="tiny" style="margin-top:6px">От этого дня считаем, сколько можно тратить в день.</div>' +
+      '</div>'
+    );
+  }
+
+  /* правила категорий */
+  function rulesSettings() {
+    const rules = MF.csv && MF.csv.rules ? MF.csv.rules() : [];
+    const cats = (MF.state.categories || []).filter(function (c) {
+      return c.kind !== 'income';
+    });
+
+    const list = rules.length
+      ? rules
+          .map(function (r, i) {
+            const c = MF.cat(r.categoryId) || {};
+            return (
+              '<div class="rule-row">' +
+              '<span class="rule-pat">' + esc(r.pattern) + '</span>' +
+              '<span class="rule-arrow">→</span>' +
+              '<span class="rule-cat">' + (c.icon || '•') + ' ' + esc(c.name || '—') + '</span>' +
+              '<button class="rule-del" data-action="rule-del" data-id="' + i + '" aria-label="Удалить">✕</button>' +
+              '</div>'
+            );
+          })
+          .join('')
+      : '<p class="tiny">Правил пока нет. Добавьте: «пятёрочка → Продукты» — и импорт будет разбираться сам.</p>';
+
+    return (
+      '<div class="field"><span class="field-label">Правила категорий</span>' +
+      list +
+      '<div class="rule-add">' +
+      '<input class="input" id="rulePattern" placeholder="слово в описании" autocomplete="off">' +
+      '<select class="input" id="ruleCat">' +
+      cats
+        .map(function (c) {
+          return '<option value="' + c.id + '">' + c.icon + ' ' + esc(c.name) + '</option>';
+        })
+        .join('') +
+      '</select>' +
+      '<button class="btn btn-primary btn-sm" data-action="rule-add">Добавить</button>' +
+      '</div>' +
+      '<div class="tiny" style="margin-top:6px">Работают при импорте выписки и при подсказке категории.</div>' +
+      '</div>'
     );
   }
 
@@ -9746,6 +9983,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       )}<span>Карточка</span></button>` +
       `</section>` +
 
+      quickCard() +
+      paydayCard() +
+      (MF.remind && MF.remind.cardHtml ? MF.remind.cardHtml() : '') +
       `${heroMiniCard()}` +
       `<div class="stat-grid">` +
       `<div class="stat"><div class="stat-label">${UI.icon('up', '', 13)} Доходы</div>` +
@@ -9961,8 +10201,13 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       )
       .join('');
 
-    const dayBlocks = Object.keys(groups)
-      .sort((a, b) => (a < b ? 1 : -1))
+    /* виртуализация: показываем порциями, чтобы не тормозить на тысячах строк */
+    const allDays = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1));
+    const limit = Math.max(10, Number(MF.prefs.txShown) || 12);
+    const shownDays = allDays.slice(0, limit);
+    const hiddenTx = allDays.slice(limit).reduce((sum, d) => sum + groups[d].length, 0);
+
+    const dayBlocks = shownDays
       .map((date) => {
         const items = groups[date];
         const dayOut = items.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
@@ -9978,7 +10223,15 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
           `<div class="tx-list">${items.map((t) => UI.txRow(t)).join('')}</div></div>`
         );
       })
-      .join('');
+      .join('') +
+      (hiddenTx > 0
+        ? `<button class="btn btn-ghost btn-block" data-action="tx-more">Показать ещё · ${hiddenTx} ${MF.plural(
+            hiddenTx,
+            'операция',
+            'операции',
+            'операций'
+          )}</button>`
+        : '');
 
     return (
       UI.header({
@@ -11125,6 +11378,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `<button class="${MF.prefs.seasonalIcon === false ? 'active' : ''}" data-action="seasonal-set" data-id="off">Выключить</button>` +
       `</div>` +
       `<div class="tiny" style="margin-top:6px">В декабре — праздничная иконка, в январе и феврале — зимняя.</div></div>` +
+      (MF.remind && MF.remind.settingsHtml ? MF.remind.settingsHtml() : '') +
+      paydaySettings() +
+      rulesSettings() +
       (MF.i18n && MF.i18n.pickerHtml ? MF.i18n.pickerHtml() : '') +
       (MF.looks && MF.looks.pickerHtml ? MF.looks.pickerHtml() : '') +
       (MF.custom && MF.custom.pickerHtml ? MF.custom.pickerHtml() : '') +
@@ -11250,6 +11506,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `Установите как приложение: в Chrome или Edge нажмите «Установить» в адресной строке, ` +
       `на iPhone — «Поделиться» → «На экран Домой».</p>` +
       `<p class="tiny" style="margin-top:10px">${MF.storageOk() ? 'Хранилище устройства доступно ✓' : '⚠️ Хранилище недоступно — данные не сохранятся после перезагрузки.'}</p>` +
+      `<p class="tiny">Данных в базе: ${MF.storageInfo ? MF.storageInfo().txs : 0} операций · ${MF.storageInfo ? MF.storageInfo().kb : 0} КБ` +
+        (MF.storageInfo && MF.storageInfo().kb > 3500 ? ' · близко к пределу, сделайте копию' : '') +
+        `</p>` +
       `</div>`
     );
   };
@@ -11740,6 +11999,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `<input id="gDeadline" class="input" type="date" value="${d.deadline || ''}"></div>` +
       `<div class="field"><label for="gNote">Заметка</label>` +
       `<input id="gNote" class="input" maxlength="120" placeholder="Зачем эта цель" value="${esc(d.note || '')}"></div>` +
+      `<div class="field"><div class="row-between"><label for="gAuto">Откладывать автоматически</label>` +
+      `<span class="tiny">% с дохода</span></div>` +
+      `<input id="gAuto" class="input" inputmode="numeric" placeholder="0" value="${d.autoPercent || ''}"></div>` +
       `<div class="field"><span class="field-label">Иконка</span>${emojiPicker(d.icon)}</div>` +
       `<div class="field"><span class="field-label">Обложка</span>${photoPicker(d.photo)}</div>` +
       `<div class="field"><span class="field-label">Цвет</span>${colorPicker(d.color)}</div>`
@@ -11791,7 +12053,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   };
 
   function bindGoalForm() {
-    const map = { gName: 'name', gTarget: 'target', gSaved: 'saved', gDeadline: 'deadline', gNote: 'note' };
+    const map = { gName: 'name', gTarget: 'target', gSaved: 'saved', gDeadline: 'deadline', gNote: 'note', gAuto: 'autoPercent' };
     Object.keys(map).forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -16307,6 +16569,27 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     MF.App.render();
   };
 
+  /* объём данных: сколько записей и места */
+  MF.storageInfo = function () {
+    let bytes = 0;
+    try {
+      const raw = localStorage.getItem('moneyflow.state.v1') || '';
+      bytes = raw.length;
+    } catch (e) {}
+    const txs = (MF.state.transactions || []).length;
+    const perTx = txs ? Math.round(bytes / txs) : 0;
+    return {
+      kb: Math.round(bytes / 1024),
+      txs: txs,
+      perTx: perTx,
+      accounts: (MF.state.accounts || []).length,
+      goals: (MF.state.goals || []).length,
+      recurring: (MF.state.recurring || []).length,
+      categories: (MF.state.categories || []).length,
+      full: !!MF.storageFull
+    };
+  };
+
   /* --------------------- напоминание о копии --------------------------- */
   F.backupDue = function () {
     const last = MF.prefs.lastBackup;
@@ -17170,7 +17453,8 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     let added = 0;
     let skipped = 0;
 
-    C.pending.rows.forEach((r) => {
+    const run = () =>
+      C.pending.rows.forEach((r) => {
       if (C.exists(r)) {
         skipped++;
         return;
@@ -17186,7 +17470,10 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
         note: r.note
       });
       added++;
-    });
+      });
+
+    if (MF.batch) MF.batch(run);
+    else run();
 
     C.pending = null;
     UI.closeSheet();
@@ -17318,6 +17605,600 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
         w.focus();
       } catch (e) {}
     }, 50);
+  };
+})(window.MF);
+
+</script>
+    <script>
+/* js/rules.js */
+/* =========================================================================
+   MoneyFlow — правила категорий
+   Обёртка над правилами импорта + форма в настройках.
+   ========================================================================= */
+(function (MF) {
+  const R = (MF.rules = {});
+
+  R.list = function () {
+    return MF.csv && MF.csv.rules ? MF.csv.rules() : [];
+  };
+
+  R.add = function (pattern, categoryId) {
+    if (!pattern) return false;
+    if (MF.csv && MF.csv.saveRule) MF.csv.saveRule(pattern, categoryId);
+    return true;
+  };
+
+  R.remove = function (index) {
+    const i = Number(index);
+    const list = R.list();
+    if (!(i >= 0 && i < list.length)) return;
+    list.splice(i, 1);
+    MF.prefs.rules = list;
+    MF.savePrefs();
+    UI.toast('Правило удалено', '');
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+  };
+
+  R.addFromForm = function () {
+    const pat = document.getElementById('rulePattern');
+    const cat = document.getElementById('ruleCat');
+    if (!pat || !String(pat.value || '').trim()) {
+      UI.toast('Введите слово из описания', 'bad');
+      return;
+    }
+    R.add(pat.value, cat ? cat.value : '');
+    pat.value = '';
+    UI.toast('Правило добавлено', 'good');
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+  };
+
+  /* подсказка категории по описанию (для формы траты) */
+  R.suggest = function (note) {
+    if (!note) return '';
+    if (MF.csv && MF.csv.guessCategory) {
+      try {
+        return MF.csv.guessCategory({ note: note }) || '';
+      } catch (e) {
+        return '';
+      }
+    }
+    return '';
+  };
+
+  const UI = MF.UI || { toast: function () {} };
+})(window.MF);
+
+</script>
+    <script>
+/* js/payday.js */
+/* =========================================================================
+   MoneyFlow — расчёты по зарплате и ближайшим платежам
+   «Хватит ли до зарплаты» и список скорых списаний.
+   ========================================================================= */
+(function (MF) {
+  const P = (MF.payday = {});
+
+  function today() {
+    return MF.todayISO();
+  }
+
+  function shift(iso, days) {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+
+  function diffDays(a, b) {
+    const A = new Date(a + 'T00:00:00').getTime();
+    const B = new Date(b + 'T00:00:00').getTime();
+    return Math.round((B - A) / 86400000);
+  }
+
+  /* день зарплаты: из настроек, иначе из регулярного дохода, иначе 10-е */
+  P.payDay = function () {
+    const custom = Number(MF.prefs.payday);
+    if (custom >= 1 && custom <= 31) return custom;
+    const inc = (MF.recurring ? MF.recurring.active() : []).filter((r) => r.type === 'income');
+    if (inc.length) return Math.min(31, Math.max(1, Number(inc[0].day) || 10));
+    return 10;
+  };
+
+  /* дата следующего дохода */
+  P.nextIncome = function () {
+    const day = P.payDay();
+    const now = new Date();
+    const t = today();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    function make(y, m) {
+      const last = new Date(y, m + 1, 0).getDate();
+      const d = Math.min(day, last);
+      return y + '-' + ('0' + (m + 1)).slice(-2) + '-' + ('0' + d).slice(-2);
+    }
+
+    let candidate = make(year, month);
+    if (candidate <= t) {
+      const nextMonth = month === 11 ? 0 : month + 1;
+      const y2 = month === 11 ? year + 1 : year;
+      candidate = make(y2, nextMonth);
+    }
+    return candidate;
+  };
+
+  /* ближайшие платежи в пределах N дней */
+  P.upcoming = function (days) {
+    const span = typeof days === 'number' ? days : 7;
+    const from = today();
+    const to = shift(from, span);
+    const out = [];
+
+    (MF.recurring ? MF.recurring.active() : []).forEach(function (r) {
+      if (r.type === 'income') return;
+      const day = Math.min(31, Math.max(1, Number(r.day) || 1));
+      const now = new Date(from + 'T00:00:00');
+      for (let k = 0; k < 2; k++) {
+        const m = now.getMonth() + k;
+        const y = now.getFullYear() + Math.floor(m / 12);
+        const mm = ((m % 12) + 12) % 12;
+        const last = new Date(y, mm + 1, 0).getDate();
+        const iso = y + '-' + ('0' + (mm + 1)).slice(-2) + '-' + ('0' + Math.min(day, last)).slice(-2);
+        if (iso >= from && iso <= to) {
+          out.push({
+            id: r.id,
+            date: iso,
+            name: r.name,
+            amount: Number(r.amount) || 0,
+            categoryId: r.categoryId,
+            days: diffDays(from, iso)
+          });
+        }
+      }
+    });
+
+    return out.sort(function (a, b) {
+      return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    });
+  };
+
+  /* сколько можно тратить в день, чтобы дожить до дохода */
+  P.safeToSpend = function () {
+    const next = P.nextIncome();
+    const daysLeft = Math.max(1, diffDays(today(), next));
+    const accounts = MF.totals().accounts;
+
+    /* что уже отложено в цели — не трогаем */
+    let goalsSaved = 0;
+    (MF.state.goals || []).forEach(function (g) {
+      try {
+        goalsSaved += Number(MF.goalSaved(g)) || 0;
+      } catch (e) {}
+    });
+
+    const upcoming = P.upcoming(daysLeft);
+    const planned = upcoming.reduce(function (s, p) {
+      return s + p.amount;
+    }, 0);
+
+    const free = Math.max(0, accounts - goalsSaved - planned);
+    const perDay = free / daysLeft;
+
+    return {
+      next: next,
+      daysLeft: daysLeft,
+      free: free,
+      planned: planned,
+      upcoming: upcoming,
+      perDay: perDay,
+      accounts: accounts,
+      goalsSaved: goalsSaved
+    };
+  };
+
+  /* цифры за неделю для отчёта */
+  P.week = function (offsetWeeks) {
+    const off = (Number(offsetWeeks) || 0) * 7;
+    const end = shift(today(), -off);
+    const start = shift(end, -6);
+    const rows = (MF.state.transactions || []).filter(function (t) {
+      const d = String(t.date).slice(0, 10);
+      return d >= start && d <= end;
+    });
+
+    let income = 0;
+    let expense = 0;
+    const byCat = {};
+    rows.forEach(function (t) {
+      const a = Math.abs(Number(t.amount) || 0);
+      if (t.type === 'income') income += a;
+      else {
+        expense += a;
+        const key = t.categoryId || 'other';
+        byCat[key] = (byCat[key] || 0) + a;
+      }
+    });
+
+    const top = Object.keys(byCat)
+      .map(function (id) {
+        const c = MF.cat(id) || {};
+        return { id: id, name: c.name || 'Прочее', icon: c.icon || '•', color: c.color || '#7c8cff', sum: byCat[id] };
+      })
+      .sort(function (a, b) {
+        return b.sum - a.sum;
+      })
+      .slice(0, 3);
+
+    return {
+      start: start,
+      end: end,
+      income: income,
+      expense: expense,
+      net: income - expense,
+      count: rows.length,
+      top: top
+    };
+  };
+
+  P.shift = shift;
+  P.diffDays = diffDays;
+})(window.MF);
+
+</script>
+    <script>
+/* js/reminders.js */
+/* =========================================================================
+   MoneyFlow — напоминания о платежах
+   Системные уведомления (если разрешены) и карточка на Обзоре.
+   ========================================================================= */
+(function (MF) {
+  const RM = (MF.remind = {});
+  const UI = MF.UI;
+
+  RM.enabled = function () {
+    return MF.prefs.remind !== false;
+  };
+
+  RM.supported = function () {
+    return typeof window !== 'undefined' && 'Notification' in window;
+  };
+
+  RM.permission = function () {
+    try {
+      return RM.supported() ? Notification.permission : 'unsupported';
+    } catch (e) {
+      return 'unsupported';
+    }
+  };
+
+  RM.ask = function () {
+    if (!RM.supported()) {
+      UI.toast('Браузер не поддерживает уведомления', 'bad');
+      return;
+    }
+
+    const apply = function (p) {
+      if (p === 'granted') {
+        UI.toast('Уведомления включены', 'good');
+        RM.notify(true);
+      } else {
+        UI.toast('Уведомления запрещены в настройках браузера', 'bad');
+      }
+      if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    };
+
+    let asked;
+    try {
+      asked = Notification.requestPermission();
+    } catch (e) {
+      UI.toast('Не удалось запросить разрешение', 'bad');
+      return;
+    }
+
+    if (asked && typeof asked.then === 'function') asked.then(apply).catch(function () {});
+    else apply(asked);
+  };
+
+  RM.toggle = function () {
+    MF.prefs.remind = !RM.enabled();
+    MF.savePrefs();
+    if (MF.prefs.remind && RM.supported() && RM.permission() === 'default') RM.ask();
+    UI.toast(RM.enabled() ? 'Напоминания включены' : 'Напоминания выключены', '');
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+  };
+
+  /* что показать: платежи на сегодня и завтра */
+  RM.todayList = function () {
+    return (MF.payday ? MF.payday.upcoming(1) : []).filter(function (p) {
+      return p.days <= 1;
+    });
+  };
+
+  /* системное уведомление — один раз в день */
+  RM.notify = function (force) {
+    if (!RM.enabled() || !RM.supported() || RM.permission() !== 'granted') return false;
+
+    const items = RM.todayList();
+    if (!items.length) return false;
+
+    const key = MF.todayISO() + '|' + items.length;
+    if (!force && MF.prefs.remindShown === key) return false;
+    MF.prefs.remindShown = key;
+    MF.savePrefs();
+
+    const sum = items.reduce(function (s, p) {
+      return s + p.amount;
+    }, 0);
+    const title = items.length === 1 ? 'Сегодня платёж' : 'Сегодня ' + items.length + ' платежа';
+    const body =
+      items
+        .map(function (p) {
+          return p.name + ' — ' + MF.money(p.amount, { short: true });
+        })
+        .join('\n') + '\nВсего: ' + MF.money(sum, { short: true });
+
+    try {
+      const n = new Notification(title, {
+        body: body,
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: 'mf-remind',
+        silent: false
+      });
+      n.onclick = function () {
+        try {
+          window.focus();
+          n.close();
+        } catch (e) {}
+      };
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  /* карточка на Обзоре */
+  RM.cardHtml = function () {
+    if (!RM.enabled()) return '';
+    const items = MF.payday ? MF.payday.upcoming(7) : [];
+    if (!items.length) return '';
+
+    const sum = items.reduce(function (s, p) {
+      return s + p.amount;
+    }, 0);
+    const rows = items
+      .slice(0, 4)
+      .map(function (p) {
+        const c = MF.cat(p.categoryId) || {};
+        const when = p.days === 0 ? 'сегодня' : p.days === 1 ? 'завтра' : 'через ' + p.days + ' дн.';
+        return (
+          '<div class="rem-row">' +
+          '<span class="rem-ico">' + (c.icon || '🔁') + '</span>' +
+          '<span class="rem-name">' + UI.esc(p.name) + '<span class="rem-when">' + when + '</span></span>' +
+          '<span class="rem-sum">' + MF.money(p.amount, { short: true }) + '</span>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const perm = RM.permission();
+    const needAsk = RM.supported() && perm === 'default';
+
+    return (
+      '<div class="card remind-card">' +
+      '<div class="card-head"><span class="card-title">🔔 Скоро списания</span>' +
+      '<span class="card-link">' + MF.money(sum, { short: true }) + '</span></div>' +
+      rows +
+      (items.length > 4 ? '<p class="tiny">…и ещё ' + (items.length - 4) + '</p>' : '') +
+      (needAsk
+        ? '<button class="btn btn-ghost btn-sm" data-action="remind-ask" style="margin-top:8px">Включить уведомления</button>'
+        : '') +
+      '</div>'
+    );
+  };
+
+  RM.settingsHtml = function () {
+    const on = RM.enabled();
+    const perm = RM.permission();
+    const label =
+      perm === 'granted' ? 'разрешение есть' : perm === 'denied' ? 'запрещены в браузере' : perm === 'unsupported' ? 'не поддерживаются' : 'нужно разрешение';
+
+    return (
+      '<div class="field"><span class="field-label">Напоминания</span>' +
+      '<button type="button" class="switch-row" data-action="remind-toggle">' +
+      '<span>Напоминать о платежах</span><span class="switch ' + (on ? 'on' : '') + '"><i></i></span></button>' +
+      '<div class="tiny" style="margin-top:6px">Показываем платежи на неделю вперёд. Системные уведомления: ' + label + '.</div>' +
+      (on && RM.supported() && perm !== 'granted'
+        ? '<button class="btn btn-ghost btn-sm" data-action="remind-ask" style="margin-top:8px">Разрешить уведомления</button>'
+        : '') +
+      '</div>'
+    );
+  };
+})(window.MF);
+
+</script>
+    <script>
+/* js/weekly.js */
+/* =========================================================================
+   MoneyFlow — недельный отчёт-картинка
+   Рисует карточку «неделя в цифрах» и отдаёт в «Поделиться» или файлом.
+   ========================================================================= */
+(function (MF) {
+  const W = (MF.weekly = {});
+  const UI = MF.UI;
+
+  const WIDTH = 1080;
+  const HEIGHT = 1350;
+
+  function money(n) {
+    return MF.money(Math.round(Math.abs(n))).replace(/\u00A0/g, ' ');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function draw(ctx, week, theme) {
+    const dark = theme !== 'light';
+    const bg1 = dark ? '#0b1018' : '#f5f2ea';
+    const bg2 = dark ? '#131b28' : '#ffffff';
+    const fg = dark ? '#eef2fb' : '#15171c';
+    const muted = dark ? '#8b96ab' : '#6b6f7a';
+    const accent = dark ? '#7c8cff' : '#3f51d6';
+    const green = dark ? '#43d18b' : '#0f8a54';
+    const red = dark ? '#ff7a8a' : '#c0303f';
+
+    const g = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+    g.addColorStop(0, bg1);
+    g.addColorStop(1, bg2);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    /* свечение */
+    const glow = ctx.createRadialGradient(WIDTH - 120, 120, 20, WIDTH - 120, 120, 520);
+    glow.addColorStop(0, dark ? 'rgba(124,140,255,0.35)' : 'rgba(63,81,214,0.16)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, WIDTH, 620);
+
+    ctx.textBaseline = 'alphabetic';
+
+    /* шапка */
+    ctx.fillStyle = muted;
+    ctx.font = '600 28px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('MONEYFLOW', 72, 108);
+
+    const d1 = week.start.slice(8, 10) + '.' + week.start.slice(5, 7);
+    const d2 = week.end.slice(8, 10) + '.' + week.end.slice(5, 7);
+    ctx.fillText(d1 + ' — ' + d2, 72, 148);
+
+    ctx.fillStyle = fg;
+    ctx.font = '800 62px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Неделя в цифрах', 72, 232);
+
+    /* главные числа */
+    ctx.fillStyle = muted;
+    ctx.font = '600 30px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Расходы', 72, 330);
+    ctx.fillStyle = fg;
+    ctx.font = '800 86px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(money(week.expense), 72, 412);
+
+    ctx.fillStyle = muted;
+    ctx.font = '600 30px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Доходы', 620, 330);
+    ctx.fillStyle = green;
+    ctx.font = '800 62px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(money(week.income), 620, 404);
+
+    /* итог */
+    const netText = (week.net >= 0 ? '+' : '−') + money(week.net);
+    ctx.fillStyle = week.net >= 0 ? green : red;
+    ctx.font = '700 40px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(netText + ' за неделю', 72, 492);
+
+    /* топ категорий */
+    ctx.fillStyle = muted;
+    ctx.font = '600 28px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('КУДА УШЛО', 72, 586);
+
+    const maxSum = week.top.length ? week.top[0].sum : 1;
+    week.top.forEach(function (c, i) {
+      const y = 640 + i * 118;
+      ctx.fillStyle = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+      roundRect(ctx, 72, y, WIDTH - 144, 96, 24);
+      ctx.fill();
+
+      ctx.fillStyle = c.color || accent;
+      roundRect(ctx, 72, y, 8, 96, 4);
+      ctx.fill();
+
+      ctx.fillStyle = fg;
+      ctx.font = '600 32px -apple-system, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText((c.icon || '•') + ' ' + c.name, 108, y + 58);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = muted;
+      ctx.font = '700 32px -apple-system, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(money(c.sum), WIDTH - 108, y + 58);
+      ctx.textAlign = 'left';
+
+      const width = Math.max(6, ((c.sum / maxSum) * (WIDTH - 300)) | 0);
+      ctx.fillStyle = (c.color || accent) + '66';
+      roundRect(ctx, 108, y + 72, width, 6, 3);
+      ctx.fill();
+    });
+
+    if (!week.top.length) {
+      ctx.fillStyle = muted;
+      ctx.font = '500 30px -apple-system, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('На этой неделе трат не было', 72, 660);
+    }
+
+    /* подвал */
+    ctx.fillStyle = muted;
+    ctx.font = '500 26px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(week.count + ' операций · данные только на устройстве', 72, HEIGHT - 74);
+  }
+
+  function canvasFor(week) {
+    const canvas = document.createElement('canvas');
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+    const ctx = canvas.getContext('2d');
+    draw(ctx, week, MF.prefs.theme === 'light' ? 'light' : 'dark');
+    return canvas;
+  }
+
+  W.preview = function () {
+    const week = MF.payday.week(0);
+    const canvas = canvasFor(week);
+    const url = canvas.toDataURL('image/png');
+
+    UI.sheet({
+      title: '🗓 Неделя в цифрах',
+      subtitle: week.start.slice(8, 10) + '.' + week.start.slice(5, 7) + ' — ' + week.end.slice(8, 10) + '.' + week.end.slice(5, 7),
+      body:
+        `<img class="week-shot" src="${url}" alt="Отчёт за неделю">` +
+        `<p class="tiny" style="margin-top:10px">Расходы ${money(week.expense)} · доходы ${money(week.income)} · ${week.count} операций</p>`,
+      footer:
+        `<button class="btn btn-primary" data-action="week-share">Поделиться</button> ` +
+        `<button class="btn btn-ghost" data-action="week-save">Скачать</button>`,
+      wide: true
+    });
+
+    W.lastUrl = url;
+  };
+
+  W.share = function () {
+    const week = MF.payday.week(0);
+    const canvas = canvasFor(week);
+    canvas.toBlob(function (blob) {
+      if (!blob) return;
+      const file = new File([blob], 'moneyflow-week.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Неделя в цифрах' }).catch(function () {});
+      } else {
+        W.download();
+      }
+    }, 'image/png');
+  };
+
+  W.download = function () {
+    const week = MF.payday.week(0);
+    const canvas = canvasFor(week);
+    const link = document.createElement('a');
+    link.download = 'moneyflow-week-' + week.end + '.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    UI.toast('Картинка сохранена', 'good');
   };
 })(window.MF);
 
@@ -18874,6 +19755,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     { id: 'heromini', name: 'Герой' },
     { id: 'stats', name: 'Доходы и расходы' },
     { id: 'safe', name: 'Сегодня можно' },
+    { id: 'payday', name: 'До зарплаты' },
+    { id: 'remind', name: 'Скоро списания' },
+    { id: 'quick', name: 'Быстрая запись' },
     { id: 'budget', name: 'Бюджет и счета' },
     { id: 'goals', name: 'Цели' },
     { id: 'smart', name: 'Умный расчёт' },
@@ -18886,7 +19770,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   ];
 
   /* блоки, которые остаются в простом режиме */
-  C.simpleKeep = ['hero', 'heromini', 'stats', 'safe', 'budget', 'goals'];
+  C.simpleKeep = ['hero', 'heromini', 'stats', 'safe', 'payday', 'budget', 'goals'];
 
   C.hidden = function () {
     return Array.isArray(MF.prefs.dashHidden) ? MF.prefs.dashHidden.slice() : [];
@@ -18945,6 +19829,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     if (cls.indexOf('stat-grid') >= 0) return 'stats';
     if (cls.indexOf('ask-card') >= 0) return 'assistant';
     if (cls.indexOf('safe-card') >= 0) return 'safe';
+    if (cls.indexOf('payday-card') >= 0) return 'payday';
+    if (cls.indexOf('remind-card') >= 0) return 'remind';
+    if (cls.indexOf('quick-card') >= 0) return 'quick';
     if (cls.indexOf('challenge-card') >= 0) return 'challenge';
     if (cls.indexOf('goal-scroll') >= 0) return 'goals';
     if (cls.indexOf('sec-head') >= 0) return 'goals';
@@ -19497,6 +20384,29 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       `</div>`;
   }
 
+  /* быстрая запись траты: сумма из поля + категория */
+  function quickSave(categoryId) {
+    const input = document.getElementById('quickAmount');
+    if (!input) return;
+    const amount = MF.parseAmount(input.value);
+    if (!amount) {
+      UI.toast('Введите сумму', 'bad');
+      input.focus();
+      return;
+    }
+    const acc = MF.state.accounts[0];
+    MF.addTx({
+      type: 'expense',
+      amount: amount,
+      categoryId: categoryId,
+      accountId: acc && acc.id,
+      date: MF.todayISO()
+    });
+    const cat = MF.cat(categoryId);
+    UI.toast((cat && cat.icon ? cat.icon + ' ' : '') + MF.money(amount, { short: true }) + ' записано', 'good');
+    input.value = '';
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+  }
   function buildTabbar() {
     const bar = document.getElementById('tabbar');
     if (!bar) return;
@@ -19661,6 +20571,15 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       render();
     },
     'open-add': () => F.openTx(null),
+    'week-open': () => MF.weekly.preview(),
+    'week-share': () => MF.weekly.share(),
+    'week-save': () => MF.weekly.download(),
+    'quick-save': (el) => quickSave(el.dataset.id),
+    'tx-more': () => {
+      MF.prefs.txShown = Math.max(10, Number(MF.prefs.txShown) || 12) + 10;
+      MF.savePrefs();
+      MF.App.render();
+    },
     'quick-add': (el) => {
       const ds = el.dataset;
       const cat = ds.cat ? MF.cat(ds.cat) : null;
@@ -19802,6 +20721,11 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     'family-export': () => MF.family.exportForPartner(),
     'family-join': () => MF.family.openJoin(),
     'family-apply': () => MF.family.apply(),
+    'remind-ask': () => MF.remind.ask(),
+    'remind-toggle': () => MF.remind.toggle(),
+    'payday-edit': () => MF.App.go('settings'),
+    'rule-add': () => MF.rules.addFromForm(),
+    'rule-del': (el) => MF.rules.remove(el.dataset.id),
     'lang-set': (el) => MF.i18n.set(el.dataset.id),
     'zoom-set': (el) => MF.custom.setZoom(el.dataset.id),
     'custom-toggle': (el) => MF.custom.toggle(el.dataset.id, el.innerText.trim()),
@@ -20101,6 +21025,14 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     const el = e.target;
     if (!el) return;
 
+    if (el.dataset && el.dataset.action === 'payday-set') {
+      MF.prefs.payday = Math.min(31, Math.max(1, Number(el.value) || 10));
+      MF.savePrefs();
+      render({ quick: true });
+      UI.toast('День зарплаты: ' + MF.prefs.payday, 'good');
+      return;
+    }
+
     if (el.dataset && el.dataset.rate) {
       const code = el.dataset.rate;
       const v = parseFloat(String(el.value).replace(',', '.'));
@@ -20340,6 +21272,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
 
 
 
+
+
+
 </script>
   <script>
 /* js/photos.js */
@@ -20444,6 +21379,9 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
 </script>
 </body>
 </html>
+
+
+
 
 
 
