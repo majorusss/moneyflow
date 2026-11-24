@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>MoneyFlow — диагностика</title>
 <style>
-  :root { color-scheme: dark; }
   body {
     margin: 0; padding: 18px 16px 40px;
     background: #080b11; color: #eef2f9;
@@ -22,40 +21,21 @@
   .bad { color: #ff6b7a; font-weight: 650; }
   .warn { color: #ffb020; font-weight: 650; }
   #verdict { font-size: 16px; font-weight: 700; padding: 14px; border-radius: 14px; margin-bottom: 14px; background: #1b2433; }
-  pre { white-space: pre-wrap; font-size: 11px; color: #8494a8; margin: 6px 0 0; max-height: 220px; overflow: auto; }
-  iframe { width: 100%; height: 260px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #000; }
+  pre { white-space: pre-wrap; font-size: 11px; color: #8494a8; margin: 6px 0 0; max-height: 200px; overflow: auto; }
+  iframe { width: 100%; height: 320px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #000; margin-top: 10px; }
 </style>
 </head>
 <body>
   <h1>Диагностика MoneyFlow</h1>
-  <p class="sub">Откройте эту страницу на телефоне и пришлите скриншот целиком</p>
+  <p class="sub">Откройте на телефоне и пришлите скриншот целиком</p>
 
   <div id="verdict">Проверяю…</div>
 
-  <div class="block">
-    <h2>Устройство и браузер</h2>
-    <div id="env"></div>
-  </div>
-
-  <div class="block">
-    <h2>Поддержка возможностей</h2>
-    <div id="feat"></div>
-  </div>
-
-  <div class="block">
-    <h2>Service worker и кэш</h2>
-    <div id="sw"></div>
-  </div>
-
-  <div class="block">
-    <h2>Проверка самого приложения</h2>
-    <div id="app"></div>
-  </div>
-
-  <div class="block">
-    <h2>Ошибки JavaScript</h2>
-    <pre id="errors">—</pre>
-  </div>
+  <div class="block"><h2>Устройство и браузер</h2><div id="env"></div></div>
+  <div class="block"><h2>Поддержка возможностей</h2><div id="feat"></div></div>
+  <div class="block"><h2>Service worker и кэш</h2><div id="sw"></div></div>
+  <div class="block"><h2>Проверка приложения</h2><div id="app"></div></div>
+  <div class="block"><h2>Ошибки JavaScript</h2><pre id="errors">—</pre></div>
 
 <script>
 (function () {
@@ -73,40 +53,28 @@
     return '<div class="row"><span>' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>';
   }
 
-  /* --- окружение --- */
-  var env = [];
   var ua = navigator.userAgent;
   var browser = /Chrome\/(\d+)/.exec(ua);
-  var isChrome = !!browser && !/Edg|OPR|YaBrowser/.test(ua);
-  env.push(row('Экран', window.innerWidth + '×' + window.innerHeight + ' (' + (window.devicePixelRatio || 1) + 'x)'));
-  env.push(row('Браузер', browser ? (isChrome ? 'Chrome ' : 'Chromium ') + browser[1] : (ua.split(' ').slice(-2).join(' ')).slice(0, 30)));
-  env.push(row('Режим', matchMedia('(display-mode: standalone)').matches ? 'приложение (standalone)' : 'вкладка браузера'));
+  var env = [];
+  env.push(row('Экран', innerWidth + '×' + innerHeight + ' (' + (devicePixelRatio || 1) + 'x)'));
+  env.push(row('Браузер', browser ? 'Chrome ' + browser[1] : ua.slice(-24)));
+  env.push(row('Режим', matchMedia('(display-mode: standalone)').matches ? 'приложение' : 'вкладка браузера'));
+  env.push(row('Адрес', location.protocol));
   env.push(row('Онлайн', navigator.onLine ? 'да' : 'нет'));
-  env.push(row('Язык', navigator.language || '—'));
   document.getElementById('env').innerHTML = env.join('');
 
-  /* --- возможности --- */
-  var feat = [];
-  function supports(prop, value) {
-    try { return CSS.supports(prop, value); } catch (e) { return false; }
-  }
-  var checks = [
-    ['CSS Grid', supports('display', 'grid')],
-    ['CSS-переменные', supports('color', 'var(--x)')],
-    ['color-mix()', supports('background', 'color-mix(in srgb, #fff 50%, transparent)')],
-    ['backdrop-filter', supports('backdrop-filter', 'blur(4px)')],
-    ['dvh', supports('height', '100dvh')],
-    ['position: sticky', supports('position', 'sticky')],
+  function s(prop, value) { try { return CSS.supports(prop, value); } catch (e) { return false; } }
+  var feat = [
+    ['CSS Grid', s('display', 'grid')],
+    ['color-mix()', s('background', 'color-mix(in srgb, #fff 50%, transparent)')],
+    ['backdrop-filter', s('backdrop-filter', 'blur(4px)')],
+    ['dvh', s('height', '100dvh')],
     ['Service Worker', 'serviceWorker' in navigator],
     ['localStorage', (function () { try { localStorage.setItem('t', '1'); localStorage.removeItem('t'); return true; } catch (e) { return false; } })()],
     ['IndexedDB', !!window.indexedDB]
-  ];
-  checks.forEach(function (c) {
-    feat.push(row(c[0], c[1] ? 'есть' : 'НЕТ', c[1] ? 'ok' : 'bad'));
-  });
+  ].map(function (c) { return row(c[0], c[1] ? 'есть' : 'НЕТ', c[1] ? 'ok' : 'bad'); });
   document.getElementById('feat').innerHTML = feat.join('');
 
-  /* --- service worker --- */
   var swBox = document.getElementById('sw');
   if (!('serviceWorker' in navigator)) {
     swBox.innerHTML = row('Service worker', 'не поддерживается', 'bad');
@@ -114,57 +82,44 @@
     navigator.serviceWorker.getRegistrations().then(function (regs) {
       var html = row('Регистраций', String(regs.length), regs.length ? 'ok' : 'warn');
       regs.forEach(function (r) {
-        html += row('Scope', r.scope.replace(location.origin, ''));
-        html += row('Состояние', (r.active && r.active.state) || (r.installing ? 'installing' : 'нет'), r.active ? 'ok' : 'warn');
+        html += row('Состояние', (r.active && r.active.state) || 'нет', r.active ? 'ok' : 'warn');
       });
       swBox.innerHTML = html;
       if (window.caches) {
         caches.keys().then(function (keys) {
           swBox.innerHTML += row('Кэшей', String(keys.length), 'ok');
-          swBox.innerHTML += row('Имена', keys.join(', ').slice(0, 60));
         });
       }
     });
   }
 
-  /* --- проверка приложения в iframe --- */
   var appBox = document.getElementById('app');
+  appBox.innerHTML = row('Загрузка приложения…', 'ждём', 'warn');
   var frame = document.createElement('iframe');
   frame.src = './index.html?diag=1';
-  appBox.innerHTML = '<div class="row"><span>Загрузка приложения…</span><span class="warn">ждём</span></div>';
   frame.onload = function () {
     setTimeout(function () {
       var out = '';
       try {
         var doc = frame.contentDocument;
         var view = doc.getElementById('view');
+        var kids = view ? view.children.length : 0;
         var tabs = doc.querySelectorAll('.tab').length;
         var text = (doc.body.innerText || '').replace(/\s+/g, ' ').trim();
-        var title = doc.title;
-        var kids = view ? view.children.length : 0;
-
-        out += row('Заголовок', title || '—', title ? 'ok' : 'bad');
-        out += row('Блоков в #view', String(kids), kids > 0 ? 'ok' : 'bad');
-        out += row('Вкладок', String(tabs), tabs > 0 ? 'ok' : 'bad');
-        out += row('Текст на экране', text ? text.slice(0, 40) + '…' : 'ПУСТО', text ? 'ok' : 'bad');
-
-        var verdict = document.getElementById('verdict');
-        if (kids > 0 && tabs > 0) {
-          verdict.innerHTML = '✅ Приложение работает на этом устройстве.<br><small style="font-weight:400;color:#a3b0c4">Значит проблема была в установленной копии — её надо удалить и поставить заново.</small>';
-        } else {
-          verdict.innerHTML = '❌ Приложение не отрисовалось.<br><small style="font-weight:400;color:#a3b0c4">Пришлите этот скриншот — по нему видно причину.</small>';
-        }
+        out += row('Блоков в #view', String(kids), kids ? 'ok' : 'bad');
+        out += row('Вкладок', String(tabs), tabs ? 'ok' : 'bad');
+        out += row('Текст', text ? text.slice(0, 34) + '…' : 'ПУСТО', text ? 'ok' : 'bad');
+        document.getElementById('verdict').innerHTML =
+          kids && tabs
+            ? '✅ Приложение работает на этом устройстве'
+            : '❌ Приложение не отрисовалось — пришлите скриншот';
       } catch (e) {
-        out += row('Ошибка', String(e.message).slice(0, 60), 'bad');
+        out += row('Ошибка', String(e.message).slice(0, 50), 'bad');
       }
       appBox.innerHTML = out;
       appBox.appendChild(frame);
     }, 2500);
   };
-  frame.onerror = function () {
-    appBox.innerHTML = row('iframe', 'не загрузился', 'bad');
-  };
-  appBox.style.minHeight = '300px';
   appBox.appendChild(frame);
 })();
 </script>

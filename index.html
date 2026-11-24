@@ -4209,10 +4209,698 @@ body[data-season="spring"] .hero::after {
 
 .lock-host[hidden] { display: none !important; }
 
+/* --------------------------- фон приложения --------------------------- */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity .25s;
+}
+
+.app-bg.on { opacity: 1; }
+.app-bg.on::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: var(--bg-dim, 0.82);
+}
+
+/* при включённом фоне панели остаются читаемыми */
+body[data-bg="art"] .card,
+body[data-bg="custom"] .card {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+body[data-bg="art"] .tabbar,
+body[data-bg="custom"] .tabbar {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+/* выбор фона */
+.bg-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.bg-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.bg-chip {
+  flex: 0 0 auto;
+  width: 96px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface-2);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.bg-chip img { width: 100%; height: 56px; object-fit: cover; display: block; }
+.bg-chip span { display: block; font-size: 9.5px; color: var(--text-3); padding: 4px 2px; line-height: 1.2; }
+.bg-chip.active { border-color: var(--accent); }
+.bg-chip.active span { color: var(--text); }
+
+/* --------------------- карточка героя на Обзоре ----------------------- */
+.hero-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    var(--surface);
+}
+
+.hm-art {
+  flex: 0 0 74px;
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  display: grid;
+  place-items: center;
+}
+
+.hm-art svg { width: 74px; height: 74px; display: block; }
+
+.hm-body { flex: 1; min-width: 0; }
+
+.hm-top { display: flex; align-items: baseline; gap: 7px; }
+.hm-title { font-size: 14.5px; font-weight: 750; letter-spacing: -0.01em; }
+.hm-lvl { font-size: 11.5px; color: var(--text-3); }
+
+.hm-badge {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0b0f16;
+  background: var(--amber);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.hm-meta { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+
+.hm-bar {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  margin: 7px 0 4px;
+  overflow: hidden;
+}
+
+.hm-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--grad);
+}
+
+.hm-xp { font-size: 10.5px; color: var(--text-3); }
+.hm-chev { color: var(--text-3); flex: 0 0 auto; }
+
+
+/* простой режим: скрываем лишние блоки Обзора */
+.simple-hide { display: none !important; }
+
+
+/* --------------- легендарные находки --------------- */
+.leg-flavor {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  background: linear-gradient(160deg, rgba(255, 209, 102, 0.14), rgba(255, 176, 32, 0.05));
+  text-align: left;
+}
+
+.leg-flavor.small { margin-top: 8px; padding: 9px 11px; border-radius: 12px; }
+.leg-text { font-size: 13px; line-height: 1.45; color: #ffe7b8; }
+.leg-flavor.small .leg-text { font-size: 11.5px; }
+.leg-ref { margin-top: 6px; font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: #d8a94e; }
+.leg-tag {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #0b0f16;
+  background: #ffd166;
+  border-radius: 6px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.hero-item.leg {
+  border-color: rgba(255, 209, 102, 0.5);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 209, 102, 0.12), transparent 60%),
+    var(--surface);
+}
+
+.loot-box.mythic { border-color: rgba(255, 209, 102, 0.7) !important; box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.12); }
+
+.leg-best { color: #d8a94e; font-size: 11.5px; margin-top: 4px; }
+
+/* --------------------- серия заходов ------------------------------ */
+.visit-card { margin-top: 12px; }
+.visit-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+
+.visit-step {
+  flex: 0 0 auto;
+  min-width: 62px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  text-align: center;
+}
+
+.visit-step.done {
+  border-color: rgba(67, 209, 139, 0.45);
+  background: rgba(67, 209, 139, 0.1);
+}
+
+.visit-step.now {
+  border-color: rgba(255, 176, 32, 0.5);
+  background: rgba(255, 176, 32, 0.1);
+}
+
+.vs-days { font-size: 14px; font-weight: 750; letter-spacing: -0.02em; }
+.vs-gold { font-size: 10.5px; color: var(--amber); margin-top: 2px; }
+.vs-xp { font-size: 9.5px; color: var(--text-3); }
+
+/* ------------------------- бренд в боковой панели --------------------- */
+.brand { cursor: pointer; gap: 12px; }
+
+.brand-mark {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--grad);
+  color: #fff;
+  box-shadow: 0 10px 22px -12px color-mix(in srgb, var(--accent) 80%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.brand-mark svg { display: block; }
+
+.brand-text { display: flex; flex-direction: column; gap: 1px; }
+
+.brand-name { font-size: 17.5px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+
+.brand-flow { color: var(--accent); }
+
+.brand-sub {
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+html[data-style="terminal"] .brand-name { letter-spacing: 0.02em; font-size: 16px; }
+html[data-style="terminal"] .brand-mark { border-radius: 4px; box-shadow: none; }
+html[data-style="magazine"] .brand-mark { border-radius: 2px; box-shadow: none; }
+html[data-style="magazine"] .brand-name { letter-spacing: -0.01em; }
+
+/* подзаголовок в одну строку */
+.brand-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+
+/* --------------------- серия заходов на главной ---------------------- */
+.streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.sp-fire { font-size: 13px; line-height: 1; }
+.sp-num { letter-spacing: -0.02em; }
+
+.hm-streak {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--amber);
+  letter-spacing: 0.01em;
+}
+
+/* --------------------- кастомизация интерфейса ----------------------- */
+html[data-shadows="off"] .card,
+html[data-shadows="off"] .stat,
+html[data-shadows="off"] .hero,
+html[data-shadows="off"] .btn,
+html[data-shadows="off"] .sheet {
+  box-shadow: none !important;
+}
+
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-nums="on"] {
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-nums="on"] .hero-sum,
+html[data-nums="on"] .stat-val,
+html[data-nums="on"] .money,
+html[data-nums="on"] .amount {
+  font-variant-numeric: tabular-nums;
+}
+
+/* переключатели */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.switch {
+  width: 42px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  position: relative;
+  transition: background .18s;
+  flex: none;
+}
+
+.switch i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-3);
+  transition: transform .18s, background .18s;
+}
+
+.switch.on { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.switch.on i { transform: translateX(18px); background: #fff; }
+
+/* выбор блоков */
+.block-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+.block-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.block-chip.on { border-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text); }
+.bk-eye { font-size: 11px; }
+
+.seg-4 .seg-btn { font-size: 12px; padding: 8px 4px; }
+
+
+/* ------------------------- выбор языка ------------------------------- */
+.lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+.lang-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lang-chip.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.lang-flag { font-size: 16px; }
+
+</style>
+    <style>
+/* ===================== СТИЛИ ИНТЕРФЕЙСА ================================
+   Каждый стиль меняет палитру, форму, тени и шрифт целиком.
+   Блоки идут ПОСЛЕ тем, поэтому перекрывают их. */
+
+/* ---------------- Терминал: моно, острые углы, зелёный --------------- */
+html[data-style="terminal"] {
+  --bg: #040806;
+  --bg-2: #060c09;
+  --surface: #0a120d;
+  --surface-2: #0d1712;
+  --surface-3: #122019;
+  --line: rgba(53, 255, 139, 0.14);
+  --line-strong: rgba(53, 255, 139, 0.3);
+  --text: #b8ffd0;
+  --text-2: #6fdc95;
+  --text-3: #3f8c5c;
+  --accent: #35ff8b;
+  --accent-2: #7dffc0;
+  --green: #35ff8b;
+  --red: #ff5d5d;
+  --amber: #ffe066;
+  --blue: #4cd6ff;
+  --radius: 4px;
+  --radius-sm: 3px;
+  --shadow: none;
+  --font: "Roboto Mono", "Droid Sans Mono", Consolas, "Courier New", monospace;
+  color-scheme: dark;
+}
+
+html[data-style="terminal"] .card,
+html[data-style="terminal"] .stat,
+html[data-style="terminal"] .hero {
+  border-radius: 4px;
+  box-shadow: none;
+  border-color: rgba(53, 255, 139, 0.22);
+  background: #0a120d;
+}
+
+html[data-style="terminal"] .hero {
+  background: linear-gradient(180deg, #0b1510, #08100b);
+}
+
+html[data-style="terminal"] .sec-title,
+html[data-style="terminal"] .screen-head h1,
+html[data-style="terminal"] .wl-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 15px;
+}
+
+html[data-style="terminal"] .btn-primary {
+  border-radius: 3px;
+  background: #0d1a12;
+  color: #35ff8b;
+  border: 1px solid rgba(53, 255, 139, 0.45);
+}
+
+html[data-style="terminal"] .tabbar {
+  border-top: 1px solid rgba(53, 255, 139, 0.28);
+  background: #050b08;
+}
+
+html[data-style="terminal"] .tab.active { color: #35ff8b; }
+
+/* ---------------- Журнал: светлый, крупный, много воздуха -------------- */
+html[data-style="magazine"] {
+  --bg: #f7f4ee;
+  --bg-2: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1ece3;
+  --surface-3: #e7e0d3;
+  --line: rgba(26, 26, 26, 0.09);
+  --line-strong: rgba(26, 26, 26, 0.18);
+  --text: #14120f;
+  --text-2: #5d574d;
+  --text-3: #8f887a;
+  --accent: #c8102e;
+  --accent-2: #1f3a5f;
+  --green: #1a7a4c;
+  --red: #c8102e;
+  --amber: #b97a00;
+  --blue: #1f3a5f;
+  --radius: 2px;
+  --radius-sm: 2px;
+  --shadow: 0 2px 0 rgba(26, 26, 26, 0.08);
+  --font: Georgia, "Noto Serif", "Times New Roman", "PT Serif", serif;
+  color-scheme: light;
+}
+
+html[data-style="magazine"] .card,
+html[data-style="magazine"] .stat {
+  border-radius: 2px;
+  border-color: rgba(26, 26, 26, 0.16);
+  box-shadow: none;
+}
+
+html[data-style="magazine"] .screen-head h1 {
+  font-size: 34px;
+  letter-spacing: -0.02em;
+}
+
+html[data-style="magazine"] .sec-title,
+html[data-style="magazine"] .card-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11.5px;
+}
+
+html[data-style="magazine"] .hero { border-radius: 2px; background: #fff; }
+html[data-style="magazine"] .hero-sum { font-size: 44px; }
+
+html[data-style="magazine"] .btn-primary {
+  border-radius: 0;
+  background: #14120f;
+  color: #f7f4ee;
+}
+
+/* ---------------- Неон: тёмный, свечение, большие скругления ----------- */
+html[data-style="neon"] {
+  --bg: #0a0616;
+  --bg-2: #120a22;
+  --surface: #150d28;
+  --surface-2: #1d1236;
+  --surface-3: #291943;
+  --line: rgba(255, 47, 179, 0.18);
+  --line-strong: rgba(255, 47, 179, 0.4);
+  --text: #f6e9ff;
+  --text-2: #b79bd0;
+  --text-3: #7d6699;
+  --accent: #ff2fb3;
+  --accent-2: #35e5ff;
+  --green: #35ffb0;
+  --red: #ff4d6d;
+  --amber: #ffd166;
+  --blue: #35e5ff;
+  --radius: 28px;
+  --radius-sm: 20px;
+  --shadow: 0 0 40px -12px rgba(255, 47, 179, 0.55);
+  color-scheme: dark;
+}
+
+html[data-style="neon"] .card,
+html[data-style="neon"] .stat {
+  border-radius: 28px;
+  border-color: rgba(255, 47, 179, 0.28);
+  box-shadow: 0 0 34px -16px rgba(255, 47, 179, 0.8);
+}
+
+html[data-style="neon"] .hero {
+  border-radius: 30px;
+  border-color: rgba(53, 229, 255, 0.35);
+  box-shadow: 0 0 50px -20px rgba(53, 229, 255, 0.9);
+}
+
+html[data-style="neon"] .btn-primary {
+  background: linear-gradient(135deg, #ff2fb3, #35e5ff);
+  color: #12061f;
+  border-radius: 999px;
+}
+
+html[data-style="neon"] .tabbar {
+  background: rgba(21, 13, 40, 0.9);
+  border-top: 1px solid rgba(255, 47, 179, 0.35);
+}
+
+/* ---------------- Минимал: без теней, тонкие линии, компактно ---------- */
+html[data-style="minimal"] {
+  --bg: #0e0e10;
+  --bg-2: #141417;
+  --surface: #141417;
+  --surface-2: #1a1a1e;
+  --surface-3: #232329;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #ededf0;
+  --text-2: #a0a0a8;
+  --text-3: #6e6e78;
+  --accent: #e6e6e6;
+  --accent-2: #b9b9c4;
+  --green: #9be7c4;
+  --red: #ff8c8c;
+  --amber: #ffd79a;
+  --blue: #9ad6ff;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: none;
+  color-scheme: dark;
+}
+
+html[data-style="minimal"] .card,
+html[data-style="minimal"] .stat,
+html[data-style="minimal"] .hero {
+  border-radius: 10px;
+  box-shadow: none;
+  background: #141417;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-style="minimal"] .hero { background: #141417; }
+html[data-style="minimal"] .btn-primary { background: #ededf0; color: #0e0e10; border-radius: 8px; }
+html[data-style="minimal"] .sec-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #a0a0a8; }
+
+/* ---------------- Ретро: тёплый, толстые рамки, сериф ------------------ */
+html[data-style="retro"] {
+  --bg: #1d1408;
+  --bg-2: #241a0c;
+  --surface: #2a1e0d;
+  --surface-2: #33260f;
+  --surface-3: #403016;
+  --line: rgba(255, 179, 71, 0.22);
+  --line-strong: rgba(255, 179, 71, 0.45);
+  --text: #ffeccd;
+  --text-2: #d3b083;
+  --text-3: #9a7a4f;
+  --accent: #ffb347;
+  --accent-2: #ff7a45;
+  --green: #9ed36a;
+  --red: #ff6b5a;
+  --amber: #ffcf6b;
+  --blue: #6fc7d8;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow: 4px 4px 0 rgba(0, 0, 0, 0.45);
+  --font: Georgia, "Noto Serif", "PT Serif", serif;
+  color-scheme: dark;
+}
+
+html[data-style="retro"] .card,
+html[data-style="retro"] .stat,
+html[data-style="retro"] .hero {
+  border-radius: 6px;
+  border: 2px solid rgba(255, 179, 71, 0.35);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.45);
+  background: #2a1e0d;
+}
+
+html[data-style="retro"] .hero { background: linear-gradient(180deg, #33260f, #2a1e0d); }
+html[data-style="retro"] .btn-primary { border-radius: 4px; background: #ffb347; color: #241a0c; border: 2px solid #7a4d12; }
+html[data-style="retro"] .sec-title { text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ------------------------- ШРИФТЫ ------------------------------------ */
+html[data-font="serif"] {
+  --font: Georgia, "Noto Serif", "Times New Roman", "PT Serif", serif;
+}
+
+html[data-font="serif"] .hero-sum,
+html[data-font="serif"] .card-title,
+html[data-font="serif"] .sec-title {
+  letter-spacing: -0.01em;
+}
+
+html[data-font="mono"] {
+  --font: "Roboto Mono", "Droid Sans Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+
+html[data-font="mono"] .tiny,
+html[data-font="mono"] .row-sub {
+  letter-spacing: 0;
+}
+
+html[data-font="rounded"] {
+  --font: "Nunito", "Comfortaa", "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+}
+
+html[data-font="rounded"] .card-title,
+html[data-font="rounded"] .sec-title {
+  letter-spacing: 0.01em;
+}
+
+html[data-font="condensed"] {
+  --font: "Roboto Condensed", "Arial Narrow", "PT Sans Narrow", "Segoe UI", sans-serif;
+}
+
+html[data-font="condensed"] body { letter-spacing: -0.01em; }
+
+/* --------------------- выбор стиля и шрифта -------------------------- */
+.look-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+.look-chip {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  text-align: center;
+}
+
+.look-chip.active { border-color: var(--accent); }
+
+.look-prev { display: flex; height: 30px; }
+.look-prev i { flex: 1; display: block; }
+.look-name { display: block; font-size: 10.5px; color: var(--text-3); padding: 4px 2px 3px; }
+.look-chip.active .look-name { color: var(--text); }
+
+.font-row { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.font-chip {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.font-chip.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* «Система» — не переопределяет шрифт стиля */
+html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+
 </style>
   </head>
   <body>
-    <div class="app">
+    <div class="app" id="app">
       <aside class="sidebar" id="sidebar" aria-label="Основная навигация"></aside>
       <div class="main">
         <main class="view" id="view" tabindex="-1"><div class="boot-splash">MoneyFlow загружается…</div></main>
@@ -4516,11 +5204,25 @@ body[data-season="spring"] .hero::after {
   function monthLabel(key, short) {
     const p = String(key).split('-');
     const i = Math.max(0, Math.min(11, Number(p[1]) - 1));
+    if (MF.i18n && MF.i18n.month) {
+      return MF.i18n.month(i + 1, short) + ' ' + p[0];
+    }
     return (short ? MONTHS_SHORT[i] : MONTHS[i]) + ' ' + p[0];
   }
 
-  const nf0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
-  const nf1 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
+  /* локаль выбранного языка */
+  function locale() {
+    return MF.i18n && MF.i18n.locale ? MF.i18n.locale() : 'ru-RU';
+  }
+
+  let nf0 = new Intl.NumberFormat(locale(), { maximumFractionDigits: 0 });
+  let nf1 = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
+
+  /* при смене языка пересобираем форматы чисел */
+  MF.reloadLocale = function () {
+    nf0 = new Intl.NumberFormat(locale(), { maximumFractionDigits: 0 });
+    nf1 = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
+  };
 
   function money(n, opts) {
     opts = opts || {};
@@ -4542,8 +5244,11 @@ body[data-season="spring"] .hero::after {
   function compact(n) {
     const raw = Math.abs(Number(n));
     const v = isFinite(raw) ? raw : 0;
-    if (v >= 1000000) return nf1.format(v / 1000000).replace(',', '.') + ' млн';
-    if (v >= 10000) return nf0.format(Math.round(v / 1000)) + ' тыс';
+    const lang = MF.i18n && MF.i18n.current ? MF.i18n.current() : 'ru';
+    const big = lang === 'ru' ? ' млн' : lang === 'zh' ? '百万' : 'M';
+    const mid = lang === 'ru' ? ' тыс' : lang === 'zh' ? '千' : 'K';
+    if (v >= 1000000) return nf1.format(v / 1000000) + big;
+    if (v >= 10000) return nf0.format(Math.round(v / 1000)) + mid;
     return nf0.format(v);
   }
 
@@ -5147,6 +5852,14 @@ body[data-season="spring"] .hero::after {
     tabs: ['dashboard', 'tx', 'budget', 'goals', 'debts', 'portfolio', 'analysis'],
     accent: '',
     radius: 'soft',
+    style: 'fintech',
+    lang: 'ru',
+    zoom: '100',
+    shadows: true,
+    motion: true,
+    nums: false,
+    dashHidden: [],
+    font: 'system',
     appIcon: 'wallet',
     seasonalIcon: true,
     cards: 'solid',
@@ -6129,6 +6842,7 @@ body[data-season="spring"] .hero::after {
   Object.defineProperty(MF, 'prefs', { get: () => prefs, enumerable: true });
   Object.defineProperty(MF, 'assetTypes', { get: () => assetTypes(), enumerable: true });
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
@@ -7680,6 +8394,132 @@ body[data-season="spring"] .hero::after {
           `<path d="M370 108 q10 -22 0 -40 M400 104 q10 -22 0 -40 M430 108 q10 -22 0 -40" stroke="#e9d8c4" stroke-width="7" fill="none" opacity="0.6"/>` +
           `<circle cx="160" cy="120" r="10" fill="#c9a227" opacity="0.7"/><circle cx="620" cy="100" r="7" fill="#c9a227" opacity="0.5"/>`
       ),
+    mountain: () =>
+      scene(
+        '#1b2a4a',
+        '#0b1220',
+        `<circle cx="620" cy="94" r="46" fill="#ffe6a3" opacity="0.9"/>` +
+          `<path d="M0 300 L210 120 L420 300Z" fill="#22375c"/>` +
+          `<path d="M210 120 L300 210 L120 210Z" fill="#e8f0ff" opacity="0.9"/>` +
+          `<path d="M260 300 L470 150 L680 300Z" fill="#1a2b48"/>` +
+          `<path d="M470 150 L540 215 L400 215Z" fill="#dbe7ff" opacity="0.8"/>` +
+          `<rect y="300" width="800" height="60" fill="#0d1526"/>`
+      ),
+    sea: () =>
+      scene(
+        '#0c4a6e',
+        '#062033',
+        `<circle cx="150" cy="100" r="44" fill="#ffe9a8" opacity="0.85"/>` +
+          `<rect y="250" width="800" height="110" fill="#0a5578"/>` +
+          `<path d="M0 268 q50 -14 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" stroke="#63c6e8" stroke-width="6" fill="none" opacity="0.6"/>` +
+          `<path d="M0 296 q60 16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0" stroke="#39a3c9" stroke-width="5" fill="none" opacity="0.45"/>` +
+          `<path d="M640 200 l40 -8 -6 12 30 -4 -52 26 4 -12 -20 6z" fill="#eaf7ff" opacity="0.9"/>`
+      ),
+    space: () =>
+      scene(
+        '#1a1038',
+        '#07040f',
+        `<circle cx="600" cy="120" r="54" fill="#b06bff" opacity="0.55"/>` +
+          `<circle cx="600" cy="120" r="30" fill="#e7d6ff" opacity="0.9"/>` +
+          `<g fill="#ffffff" opacity="0.85"><circle cx="120" cy="80" r="3"/><circle cx="220" cy="150" r="2"/><circle cx="330" cy="60" r="2.5"/><circle cx="470" cy="200" r="2"/><circle cx="700" cy="250" r="3"/><circle cx="80" cy="240" r="2.5"/><circle cx="540" cy="60" r="2"/></g>` +
+          `<path d="M760 40 l16 34 34 16 -34 16 -16 34 -16 -34 -34 -16 34 -16z" fill="#ffd166" opacity="0.7"/>`
+      ),
+    forest: () =>
+      scene(
+        '#0d3324',
+        '#04170f',
+        `<circle cx="660" cy="86" r="40" fill="#bfe8c6" opacity="0.4"/>` +
+          `<rect y="300" width="800" height="60" fill="#071f15"/>` +
+          `<g fill="#155e3f"><path d="M120 300 l-56 0 56 -110 56 110z"/></g>` +
+          `<g fill="#1b7a4f"><path d="M240 300 l-70 0 70 -140 70 140z"/></g>` +
+          `<g fill="#0f4a30"><path d="M360 300 l-62 0 62 -120 62 120z"/></g>` +
+          `<g fill="#1b7a4f"><path d="M500 300 l-78 0 78 -160 78 160z"/></g>` +
+          `<g fill="#155e3f"><path d="M640 300 l-56 0 56 -110 56 110z"/></g>` +
+          `<rect x="330" y="265" width="14" height="40" fill="#3a2a1e"/>`
+      ),
+    city: () =>
+      scene(
+        '#141c33',
+        '#070a14',
+        `<circle cx="120" cy="90" r="34" fill="#cfd8ff" opacity="0.35"/>` +
+          `<g fill="#1d2745">` +
+          `<rect x="60" y="190" width="70" height="110" rx="4"/>` +
+          `<rect x="150" y="150" width="60" height="150" rx="4"/>` +
+          `<rect x="230" y="210" width="80" height="90" rx="4"/>` +
+          `<rect x="330" y="170" width="66" height="130" rx="4"/>` +
+          `<rect x="420" y="120" width="74" height="180" rx="4"/>` +
+          `<rect x="520" y="200" width="60" height="100" rx="4"/>` +
+          `<rect x="600" y="160" width="76" height="140" rx="4"/>` +
+          `<rect x="700" y="220" width="60" height="80" rx="4"/>` +
+          `</g>` +
+          `<g fill="#7fd0ff" opacity="0.6">` +
+          `<rect x="160" y="166" width="10" height="12"/><rect x="184" y="166" width="10" height="12"/>` +
+          `<rect x="434" y="140" width="12" height="14"/><rect x="462" y="140" width="12" height="14"/>` +
+          `<rect x="434" y="168" width="12" height="14"/><rect x="462" y="168" width="12" height="14"/>` +
+          `<rect x="614" y="180" width="12" height="14"/><rect x="642" y="180" width="12" height="14"/>` +
+          `</g>` +
+          `<rect y="300" width="800" height="60" fill="#0b1020"/>`
+      ),
+    sunrise: () =>
+      scene(
+        '#7a3b2e',
+        '#2a1220',
+        `<circle cx="400" cy="230" r="86" fill="#ffb060" opacity="0.85"/>` +
+          `<circle cx="400" cy="230" r="130" fill="#ff8f4d" opacity="0.18"/>` +
+          `<rect y="272" width="800" height="88" fill="#1c0f18"/>` +
+          `<path d="M0 272 h800" stroke="#ffb060" stroke-width="3" opacity="0.5"/>` +
+          `<path d="M0 240 L180 200 L360 240 L540 198 L800 236" stroke="#ffcf9a" stroke-width="4" fill="none" opacity="0.55"/>`
+      ),
+    bike: () =>
+      scene(
+        '#16333f',
+        '#081a22',
+        `<rect y="292" width="800" height="68" fill="#0a1a22"/>` +
+          `<circle cx="250" cy="250" r="52" fill="none" stroke="#9fe0ef" stroke-width="9"/>` +
+          `<circle cx="470" cy="250" r="52" fill="none" stroke="#9fe0ef" stroke-width="9"/>` +
+          `<path d="M250 250 L330 250 L376 176 L310 176" stroke="#e8f6ff" stroke-width="9" fill="none" stroke-linecap="round"/>` +
+          `<path d="M330 250 L410 250 L470 250" stroke="#e8f6ff" stroke-width="9" fill="none" stroke-linecap="round"/>` +
+          `<path d="M410 250 L376 176" stroke="#e8f6ff" stroke-width="9" fill="none" stroke-linecap="round"/>` +
+          `<circle cx="376" cy="176" r="12" fill="#43d18b"/>` +
+          `<circle cx="600" cy="110" r="30" fill="#ffe9a8" opacity="0.5"/>`
+      ),
+    pet: () =>
+      scene(
+        '#3a2430',
+        '#180d16',
+        `<circle cx="640" cy="110" r="40" fill="#ffd2a8" opacity="0.4"/>` +
+          `<ellipse cx="400" cy="250" rx="90" ry="62" fill="#f6e2c8"/>` +
+          `<circle cx="330" cy="196" r="46" fill="#f6e2c8"/>` +
+          `<path d="M296 168 l-14 -40 40 16z" fill="#e6c7a4"/>` +
+          `<path d="M366 168 l14 -40 -40 16z" fill="#e6c7a4"/>` +
+          `<circle cx="314" cy="192" r="6" fill="#3a2a1e"/><circle cx="350" cy="192" r="6" fill="#3a2a1e"/>` +
+          `<path d="M330 210 q10 10 20 0" stroke="#3a2a1e" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+          `<path d="M486 240 q46 -30 26 20" stroke="#f6e2c8" stroke-width="14" fill="none" stroke-linecap="round"/>` +
+          `<rect y="292" width="800" height="68" fill="#120a12"/>`
+      ),
+    health: () =>
+      scene(
+        '#123a3a',
+        '#071a1a',
+        `<circle cx="400" cy="200" r="96" fill="#43d18b" opacity="0.18"/>` +
+          `<path d="M400 268 l-56 -56 a38 38 0 1 1 56 -50 a38 38 0 1 1 56 50z" fill="#ff7a8a" opacity="0.85"/>` +
+          `<path d="M344 210 h112" stroke="#ffd6dc" stroke-width="0" />` +
+          `<path d="M120 300 h160 M520 300 h160" stroke="#2e7f74" stroke-width="4" opacity="0.6"/>` +
+          `<circle cx="660" cy="96" r="34" fill="#8ff0c8" opacity="0.25"/>`
+      ),
+    music: () =>
+      scene(
+        '#2a1a44',
+        '#100818',
+        `<circle cx="150" cy="100" r="36" fill="#ffd166" opacity="0.35"/>` +
+          `<g stroke="#e6d6ff" stroke-width="10" stroke-linecap="round" fill="none">` +
+          `<path d="M330 250 V150 l150 -30 V220"/>` +
+          `</g>` +
+          `<ellipse cx="310" cy="258" rx="30" ry="22" fill="#b78bff"/>` +
+          `<ellipse cx="460" cy="228" rx="30" ry="22" fill="#b78bff"/>` +
+          `<path d="M600 120 q40 30 0 60 q-40 30 0 60" stroke="#9d7bff" stroke-width="6" fill="none" opacity="0.6"/>` +
+          `<path d="M660 110 q46 40 0 80 q-46 40 0 80" stroke="#7c5cff" stroke-width="5" fill="none" opacity="0.4"/>`
+      ),
     cart: () =>
       scene(
         '#14313a',
@@ -7695,7 +8535,10 @@ body[data-season="spring"] .hero::after {
       )
   };
 
-  const KEYS = ['travel', 'home', 'car', 'tech', 'study', 'gift', 'sport', 'money'];
+  const KEYS = [
+    'travel', 'home', 'car', 'tech', 'study', 'gift', 'sport', 'money',
+    'mountain', 'sea', 'space', 'forest', 'city', 'sunrise', 'bike', 'pet', 'health', 'music'
+  ];
 
   /* ------------------------- выбор сцены ------------------------------- */
   const RULES = [
@@ -7742,7 +8585,21 @@ body[data-season="spring"] .hero::after {
   };
 
   A.sceneForGoal = function (goal) {
+    const explicit = goal && goal.photo;
+    if (explicit && SCENES[explicit]) return A.scene(explicit);
     return A.scene(A.keyFor(goal && goal.name));
+  };
+
+  /* подписи для выбора обложки */
+  A.labels = {
+    travel: 'Путешествие', home: 'Дом', car: 'Машина', tech: 'Техника', study: 'Учёба',
+    gift: 'Подарки', sport: 'Спорт', money: 'Накопления', mountain: 'Горы', sea: 'Море',
+    space: 'Космос', forest: 'Лес', city: 'Город', sunrise: 'Рассвет', bike: 'Велосипед',
+    pet: 'Питомец', health: 'Здоровье', music: 'Музыка'
+  };
+
+  A.label = function (key) {
+    return A.labels[key] || 'Обложка';
   };
 
   /* data-URI для отрисовки на canvas (и для <img>) */
@@ -8668,6 +9525,59 @@ body[data-season="spring"] .hero::after {
     );
   }
 
+  /* подпись серии заходов для карточки героя */
+  function hmStreak() {
+    if (!MF.hero || !MF.hero.visitInfo) return '';
+    try {
+      const info = MF.hero.visitInfo();
+      if (!info || !info.streak) return '';
+      const next = info.next;
+      return (
+        '🔥 ' + info.streak + ' ' + MF.plural(info.streak, 'день', 'дня', 'дней') + ' подряд' +
+        (next ? ' · ещё ' + (next.days - info.streak) + ' до ' + next.gold + ' 🪙' : '')
+      );
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /* компактная карточка героя для Обзора */
+  function heroMiniCard() {
+    if (!MF.hero || !MF.avatar) return '';
+    let h = null;
+    try {
+      h = MF.hero.state();
+    } catch (e) {
+      return '';
+    }
+    if (!h) return '';
+
+    const eqTiers = {
+      weapon: h.eq.weapon ? h.eq.weapon.tier : 0,
+      armor: h.eq.armor ? h.eq.armor.tier : 0,
+      helmet: h.eq.helmet ? h.eq.helmet.tier : 0,
+      boots: h.eq.boots ? h.eq.boots.tier : 0,
+      amulet: h.eq.amulet ? h.eq.amulet.tier : 0
+    };
+
+    return (
+      `<div class="card hero-mini" data-action="nav" data-view="hero" style="cursor:pointer">` +
+      `<div class="hm-art">${MF.avatar.render(eqTiers, h.costume.colors, 74)}</div>` +
+      `<div class="hm-body">` +
+      `<div class="hm-top"><span class="hm-title">${esc(h.title.name)}</span>` +
+      `<span class="hm-lvl">ур. ${h.level}</span>` +
+      (h.free > 0 ? `<span class="hm-badge">+${h.free}</span>` : '') +
+      `</div>` +
+      `<div class="hm-meta">${h.power} силы · ${h.gold} 🪙${h.chests > 0 ? ' · 🎁 ' + h.chests : ''}</div>` +
+      `<div class="hm-bar"><span style="width:${h.percent}%"></span></div>` +
+      `<div class="hm-xp">${h.inLevel} / ${h.need} XP до уровня ${h.level + 1}</div>` +
+      (hmStreak() ? `<div class="hm-streak">${hmStreak()}</div>` : '') +
+      `</div>` +
+      `<span class="hm-chev">${UI.icon('right', '', 18)}</span>` +
+      `</div>`
+    );
+  }
+
   /* стартовый экран, когда данных ещё нет: вместо пустых нулей — выбор действий */
   function emptyWelcome() {
     return (
@@ -8682,8 +9592,38 @@ body[data-season="spring"] .hero::after {
       `</div>`
     );
   }
+  /* серия заходов в шапке Обзора */
+  function streakPill() {
+    if (!MF.hero || !MF.hero.visitInfo) return '';
+    let info = null;
+    try {
+      info = MF.hero.visitInfo();
+    } catch (e) {
+      return '';
+    }
+    if (!info || !info.streak) return '';
+
+    const next = info.next;
+    const title = next
+      ? 'Серия ' + info.streak + ' дн. · награда через ' + (next.days - info.streak) + ' дн.'
+      : 'Серия ' + info.streak + ' дн. · все награды собраны';
+
+    return (
+      '<button class="streak-pill" data-action="nav" data-view="hero" title="' + esc(title) + '">' +
+      '<span class="sp-fire">🔥</span><span class="sp-num">' + info.streak + '</span>' +
+      '</button>'
+    );
+  }
+
   S.dashboard = function () {
-    if (!(MF.state.transactions || []).length && Math.abs(MF.totals().accounts) < 0.01 && !MF.state.demo) {
+    /* приветствие показываем только на самом первом запуске.
+       Если человек уже нажал «Пропустить» — показываем обычный Обзор. */
+    if (
+      !(MF.state.transactions || []).length &&
+      Math.abs(MF.totals().accounts) < 0.01 &&
+      !MF.state.demo &&
+      !MF.prefs.onboarded
+    ) {
       return emptyWelcome();
     }
 
@@ -8760,7 +9700,8 @@ body[data-season="spring"] .hero::after {
         title: 'Обзор',
         tools:
           UI.monthSwitch() +
-          `<span class="head-note">${s.count} ${MF.plural(s.count, 'операция', 'операции', 'операций')}</span>`
+          `<span class="head-note">${s.count} ${MF.plural(s.count, 'операция', 'операции', 'операций')}</span>` +
+          streakPill()
       }) +
 
       (MF.first && !MF.prefs.onboarded && !(MF.state.transactions || []).length
@@ -8768,6 +9709,15 @@ body[data-season="spring"] .hero::after {
           `<div class="card-head"><span class="card-title">👋 Добро пожаловать</span>` +
           `<span class="card-link">Начать</span></div>` +
           `<p class="tiny">Настройка за минуту — или посмотрите приложение на демо-данных.</p></div>`
+        : '') +
+      (MF.prefs.onboarded && !(MF.state.transactions || []).length && !MF.state.demo
+        ? `<div class="card" style="margin-top:12px">` +
+          `<div class="card-head"><span class="card-title">С чего начать</span></div>` +
+          `<p class="tiny" style="margin-bottom:10px">Данных пока нет. Запишите первую трату — или посмотрите, как всё выглядит на демо-данных.</p>` +
+          `<button class="btn btn-primary btn-block" data-action="open-add">Добавить операцию</button>` +
+          `<button class="btn btn-ghost btn-block" style="margin-top:8px" data-action="welcome-demo">Посмотреть на демо-данных</button>` +
+          `<button class="btn btn-ghost btn-block" style="margin-top:8px" data-action="onboarding">Мастер настройки</button>` +
+          `</div>`
         : '') +
       (MF.first && !MF.prefs.onboarded
         ? `<div class="card ob-card" data-action="onboarding" style="margin-top:12px;cursor:pointer">` +
@@ -8796,6 +9746,7 @@ body[data-season="spring"] .hero::after {
       )}<span>Карточка</span></button>` +
       `</section>` +
 
+      `${heroMiniCard()}` +
       `<div class="stat-grid">` +
       `<div class="stat"><div class="stat-label">${UI.icon('up', '', 13)} Доходы</div>` +
       `<div class="stat-value pos">${MF.money(s.income, { short: true })}</div><div class="stat-hint">за месяц</div></div>` +
@@ -10025,6 +10976,18 @@ body[data-season="spring"] .hero::after {
   /* ======================================================================
      НАСТРОЙКИ
      ====================================================================== */
+  /* --------------------------- герой --------------------------------- */
+  S.hero = function () {
+    const h = MF.hero.state();
+    return (
+      UI.header({
+        title: 'Герой',
+        sub: 'уровень ' + h.level + ' · ' + h.power + ' силы · ' + h.gold + ' 🪙'
+      }) +
+      MF.hero.screenHtml()
+    );
+  };
+
   /* ------------------------ нижняя панель ------------------------------ */
   function settingsTabsBlock() {
     if (!MF.App || !MF.App.tabViews) return '';
@@ -10162,6 +11125,10 @@ body[data-season="spring"] .hero::after {
       `<button class="${MF.prefs.seasonalIcon === false ? 'active' : ''}" data-action="seasonal-set" data-id="off">Выключить</button>` +
       `</div>` +
       `<div class="tiny" style="margin-top:6px">В декабре — праздничная иконка, в январе и феврале — зимняя.</div></div>` +
+      (MF.i18n && MF.i18n.pickerHtml ? MF.i18n.pickerHtml() : '') +
+      (MF.looks && MF.looks.pickerHtml ? MF.looks.pickerHtml() : '') +
+      (MF.custom && MF.custom.pickerHtml ? MF.custom.pickerHtml() : '') +
+      (MF.bg && MF.bg.pickerHtml ? MF.bg.pickerHtml() : '') +
       `<div class="field"><span class="field-label">Форма углов</span>` +
       `<div class="seg seg-3" style="margin:0">` +
       `<button class="${(MF.prefs.radius || 'soft') === 'soft' ? 'active' : ''}" data-action="radius-set" data-id="soft">Мягкая</button>` +
@@ -10183,6 +11150,12 @@ body[data-season="spring"] .hero::after {
         )
         .join('') +
       `</div></div>` +
+      `<div class="field"><span class="field-label">Обзор</span>` +
+      `<div class="seg seg-2" style="margin:0">` +
+      `<button class="${MF.prefs.mode === 'simple' ? 'active' : ''}" data-action="mode-set" data-id="simple">Простой</button>` +
+      `<button class="${MF.prefs.mode !== 'simple' ? 'active' : ''}" data-action="mode-set" data-id="full">Полный</button>` +
+      `</div>` +
+      `<div class="tiny" style="margin-top:6px">Простой оставляет баланс, «сегодня можно», бюджет и цели. Полный показывает все блоки.</div></div>` +
       `<div class="field"><span class="field-label">Плотность</span>` +
       `<div class="seg seg-2" style="margin:0">` +
       `<button class="${MF.prefs.density !== 'compact' ? 'active' : ''}" data-action="density-set" data-id="normal">Обычная</button>` +
@@ -10242,6 +11215,11 @@ body[data-season="spring"] .hero::after {
       `<span class="row-sub">Экспорт операций в CSV</span></span>` +
       `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       (MF.autobackup ? MF.autobackup.rowHtml() : '') +
+      `<div class="list-row" data-action="family-open" style="border-bottom:1px solid var(--line)">` +
+      `<span class="row-ico">👨‍👩‍👧</span>` +
+      `<span class="row-text"><span class="row-title">Семейный режим</span>` +
+      `<span class="row-sub">Общий бюджет через обмен копиями</span></span>` +
+      `<span class="chev">${UI.icon('right', '', 16)}</span></div>` +
       `<div class="list-row" data-action="csv-import" style="border-bottom:1px solid var(--line)">` +
       `<span class="row-ico">${UI.icon('download', '', 17)}</span>` +
       `<span class="row-text"><span class="row-title">Импорт выписки</span>` +
@@ -10267,7 +11245,7 @@ body[data-season="spring"] .hero::after {
       `<div class="sec-head"><h2 class="sec-title">Приложение</h2></div>` +
       `<div class="card">` +
       `<div class="row-between" style="margin-bottom:10px"><span class="card-title">MoneyFlow</span>` +
-      `<span class="badge">v1.0</span></div>` +
+      `<span class="badge">v2.0</span></div>` +
       `<p class="tiny" style="line-height:1.6">Работает офлайн и хранит данные только на этом устройстве. ` +
       `Установите как приложение: в Chrome или Edge нажмите «Установить» в адресной строке, ` +
       `на iPhone — «Поделиться» → «На экран Домой».</p>` +
@@ -10276,6 +11254,9 @@ body[data-season="spring"] .hero::after {
     );
   };
 })(typeof window !== 'undefined' ? window : globalThis);
+
+
+
 
 
 
@@ -10765,21 +11746,38 @@ body[data-season="spring"] .hero::after {
     );
   }
 
-  /* выбор фотографии-обложки */
+  /* выбор обложки: встроенные рисунки + фотографии, если они есть */
   function photoPicker(selected) {
-    if (!MF.photos || !MF.photos.list) return '';
-    const items = MF.photos.list();
-    const chips = items
-      .map(
-        (p) =>
-          `<button type="button" class="photo-chip ${selected === p.key ? 'active' : ''}" data-action="goal-photo" data-id="${p.key}" title="${esc(
-            p.label
-          )}"><img src="${p.uri}" alt="${esc(p.label)}" loading="lazy"><span>${esc(p.label)}</span></button>`
-      )
+    const artKeys = (MF.art && MF.art.keys) || [];
+    const artChips = artKeys
+      .map((key) => {
+        const uri = MF.art.svgUri(MF.art.scene(key));
+        return (
+          `<button type="button" class="photo-chip ${selected === key ? 'active' : ''}" ` +
+          `data-action="goal-photo" data-id="${key}" title="${esc(MF.art.label(key))}">` +
+          `<img src="${uri}" alt="${esc(MF.art.label(key))}" loading="lazy"><span>${esc(MF.art.label(key))}</span></button>`
+        );
+      })
       .join('');
+
+    let photoChips = '';
+    if (MF.photos && MF.photos.list) {
+      photoChips = MF.photos
+        .list()
+        .map(
+          (p) =>
+            `<button type="button" class="photo-chip ${selected === p.key ? 'active' : ''}" data-action="goal-photo" data-id="${p.key}" title="${esc(
+              p.label
+            )}"><img src="${p.uri}" alt="${esc(p.label)}" loading="lazy"><span>${esc(p.label)}</span></button>`
+        )
+        .join('');
+    }
+
     return (
-      `<div class="photo-list">${chips}` +
-      `<button type="button" class="photo-chip ${!selected ? 'active' : ''}" data-action="goal-photo" data-id="" title="Автоматически">` +
+      `<div class="photo-list">` +
+      artChips +
+      photoChips +
+      `<button type="button" class="photo-chip ${!selected ? 'active' : ''}" data-action="goal-photo" data-id="" title="Подобрать по названию">` +
       `<span class="photo-auto">🎯</span><span>Авто</span></button></div>`
     );
   }
@@ -13622,7 +14620,7 @@ body[data-season="spring"] .hero::after {
       regen: 0,
       rage: 0,
       tier: 1,
-      gold: 40,
+      gold: 8,
       lore: 'Толкает купить «прямо сейчас»'
     },
     {
@@ -13635,7 +14633,7 @@ body[data-season="spring"] .hero::after {
       regen: 2,
       rage: 0,
       tier: 1,
-      gold: 70,
+      gold: 12,
       lore: 'Затягивает деньги на еду домой'
     },
     {
@@ -13648,7 +14646,7 @@ body[data-season="spring"] .hero::after {
       regen: 2,
       rage: 0,
       tier: 2,
-      gold: 110,
+      gold: 18,
       lore: 'Списывает по 199 ₽ каждый месяц'
     },
     {
@@ -13661,7 +14659,7 @@ body[data-season="spring"] .hero::after {
       regen: 0,
       rage: 0,
       tier: 2,
-      gold: 160,
+      gold: 25,
       lore: 'Плетёт корзины из «нужных» вещей'
     },
     {
@@ -13674,7 +14672,7 @@ body[data-season="spring"] .hero::after {
       regen: 3,
       rage: 0.08,
       tier: 3,
-      gold: 220,
+      gold: 34,
       lore: 'Звенит процентами в темноте'
     },
     {
@@ -13687,7 +14685,7 @@ body[data-season="spring"] .hero::after {
       regen: 3,
       rage: 0.1,
       tier: 3,
-      gold: 300,
+      gold: 44,
       lore: 'Воет на скидках и сметает полки'
     },
     {
@@ -13700,7 +14698,7 @@ body[data-season="spring"] .hero::after {
       regen: 5,
       rage: 0.12,
       tier: 4,
-      gold: 420,
+      gold: 58,
       lore: 'Варит зелья из переплат'
     },
     {
@@ -13713,7 +14711,7 @@ body[data-season="spring"] .hero::after {
       regen: 7,
       rage: 0.15,
       tier: 4,
-      gold: 650,
+      gold: 75,
       lore: 'Босс. Дышит огнём на бюджет'
     }
   ];
@@ -13760,7 +14758,7 @@ body[data-season="spring"] .hero::after {
         hp: Math.max(0, Math.round(hp)),
         percent: max > 0 ? Math.round((1 - hp / max) * 100) : 0,
         defeated: defeated,
-        gold: Math.round(def.gold * (1 + defeated * 0.35)),
+        gold: Math.round(def.gold * (1 + defeated * 0.2)),
         killed: hp <= 0,
         hits: B.estimateHits(Object.assign({}, def, { hp: max }), power),
         armor: Math.round(def.armor * 100),
@@ -13817,9 +14815,10 @@ body[data-season="spring"] .hero::after {
     let loot = null;
     let gold = 0;
     if (killed) {
-      gold = Math.round(def.gold * (1 + (st.defeated - 1) * 0.35));
+      gold = Math.round(def.gold * (1 + (st.defeated - 1) * 0.2));
       h.bonusGold = (h.bonusGold || 0) + gold;
-      loot = MF.hero.rollLoot();
+      /* сначала редкий шанс легендарки, потом обычный лут */
+      loot = (MF.hero.rollLegendary && MF.hero.rollLegendary(0.01)) || MF.hero.rollLoot();
       if (loot.kind === 'item') MF.hero.grantLoot(loot);
       st.lastGold = gold;
     }
@@ -13954,56 +14953,51 @@ body[data-season="spring"] .hero::after {
       name: 'Оружие',
       items: [
         { id: 'stick', name: 'Деревянный меч', icon: '🪵', str: 1, agi: 0, int: 0, cost: 0 },
-        { id: 'iron', name: 'Железный меч', icon: '🗡️', str: 3, agi: 1, int: 0, cost: 150 },
-        { id: 'silver', name: 'Серебряный клинок', icon: '⚔️', str: 6, agi: 2, int: 1, cost: 400 },
-        { id: 'gold', name: 'Золотой клинок', icon: '✨', str: 10, agi: 3, int: 4, cost: 900 },
-        { id: 'legend', name: 'Клинок легенд', icon: '🌟', str: 16, agi: 6, int: 6, cost: 2000 }
-      ]
-    },
+        { id: 'iron', name: 'Железный меч', icon: '🗡️', str: 3, agi: 1, int: 0, cost: 100 },
+        { id: 'silver', name: 'Серебряный клинок', icon: '⚔️', str: 6, agi: 2, int: 1, cost: 250 },
+        { id: 'gold', name: 'Золотой клинок', icon: '✨', str: 10, agi: 3, int: 4, cost: 500 },
+        { id: 'legend', name: 'Клинок легенд', icon: '🌟', str: 16, agi: 6, int: 6, cost: 900 }
+      ] },
     {
       id: 'armor',
       name: 'Доспех',
       items: [
         { id: 'cloth', name: 'Простая рубаха', icon: '👕', str: 0, agi: 1, int: 0, cost: 0 },
-        { id: 'leather', name: 'Кожаный доспех', icon: '🥋', str: 1, agi: 3, int: 0, cost: 150 },
-        { id: 'chain', name: 'Кольчуга', icon: '🛡️', str: 3, agi: 5, int: 1, cost: 400 },
-        { id: 'plate', name: 'Стальные латы', icon: '⛓️', str: 6, agi: 9, int: 2, cost: 900 },
-        { id: 'mithril', name: 'Мифриловые латы', icon: '💎', str: 10, agi: 14, int: 4, cost: 2000 }
-      ]
-    },
+        { id: 'leather', name: 'Кожаный доспех', icon: '🥋', str: 1, agi: 3, int: 0, cost: 100 },
+        { id: 'chain', name: 'Кольчуга', icon: '🛡️', str: 3, agi: 5, int: 1, cost: 250 },
+        { id: 'plate', name: 'Стальные латы', icon: '⛓️', str: 6, agi: 9, int: 2, cost: 500 },
+        { id: 'mithril', name: 'Мифриловые латы', icon: '💎', str: 10, agi: 14, int: 4, cost: 900 }
+      ] },
     {
       id: 'helmet',
       name: 'Шлем',
       items: [
         { id: 'none', name: 'Без шлема', icon: '🚫', str: 0, agi: 0, int: 0, cost: 0 },
-        { id: 'cap', name: 'Кожаный капюшон', icon: '🧢', str: 1, agi: 1, int: 0, cost: 120 },
-        { id: 'helm', name: 'Стальной шлем', icon: '⛑️', str: 3, agi: 1, int: 1, cost: 320 },
-        { id: 'crown', name: 'Золотая корона', icon: '👑', str: 4, agi: 2, int: 5, cost: 800 },
-        { id: 'halo', name: 'Венец мудрости', icon: '😇', str: 5, agi: 4, int: 10, cost: 1800 }
-      ]
-    },
+        { id: 'cap', name: 'Кожаный капюшон', icon: '🧢', str: 1, agi: 1, int: 0, cost: 100 },
+        { id: 'helm', name: 'Стальной шлем', icon: '⛑️', str: 3, agi: 1, int: 1, cost: 250 },
+        { id: 'crown', name: 'Золотая корона', icon: '👑', str: 4, agi: 2, int: 5, cost: 500 },
+        { id: 'halo', name: 'Венец мудрости', icon: '😇', str: 5, agi: 4, int: 10, cost: 900 }
+      ] },
     {
       id: 'boots',
       name: 'Обувь',
       items: [
         { id: 'bare', name: 'Босиком', icon: '🦶', str: 0, agi: 0, int: 0, cost: 0 },
         { id: 'sandals', name: 'Сандалии', icon: '🩴', str: 0, agi: 2, int: 0, cost: 100 },
-        { id: 'boots', name: 'Сапоги', icon: '🥾', str: 1, agi: 4, int: 0, cost: 300 },
-        { id: 'greaves', name: 'Поножи', icon: '🦿', str: 3, agi: 6, int: 1, cost: 750 },
-        { id: 'wings', name: 'Крылатые сандалии', icon: '🪽', str: 4, agi: 12, int: 3, cost: 1700 }
-      ]
-    },
+        { id: 'boots', name: 'Сапоги', icon: '🥾', str: 1, agi: 4, int: 0, cost: 250 },
+        { id: 'greaves', name: 'Поножи', icon: '🦿', str: 3, agi: 6, int: 1, cost: 500 },
+        { id: 'wings', name: 'Крылатые сандалии', icon: '🪽', str: 4, agi: 12, int: 3, cost: 900 }
+      ] },
     {
       id: 'amulet',
       name: 'Амулет',
       items: [
         { id: 'none', name: 'Без амулета', icon: '🚫', str: 0, agi: 0, int: 0, cost: 0 },
-        { id: 'pendant', name: 'Медный оберег', icon: '📿', str: 1, agi: 0, int: 1, cost: 120 },
-        { id: 'gem', name: 'Самоцвет', icon: '💠', str: 1, agi: 2, int: 3, cost: 350 },
-        { id: 'rune', name: 'Руна удачи', icon: '🔮', str: 2, agi: 3, int: 6, cost: 850 },
-        { id: 'star', name: 'Звезда судьбы', icon: '🌟', str: 3, agi: 5, int: 12, cost: 1900 }
-      ]
-    }
+        { id: 'pendant', name: 'Медный оберег', icon: '📿', str: 1, agi: 0, int: 1, cost: 100 },
+        { id: 'gem', name: 'Самоцвет', icon: '💠', str: 1, agi: 2, int: 3, cost: 250 },
+        { id: 'rune', name: 'Руна удачи', icon: '🔮', str: 2, agi: 3, int: 6, cost: 500 },
+        { id: 'star', name: 'Звезда судьбы', icon: '🌟', str: 3, agi: 5, int: 12, cost: 900 }
+      ] }
   ];
 
   H.slots = SLOTS;
@@ -14041,7 +15035,11 @@ body[data-season="spring"] .hero::after {
     }
     SLOTS.forEach((slot) => {
       const cur = h.slots[slot.id];
-      if (!slot.items.some((x) => x.id === cur)) h.slots[slot.id] = slot.items[0].id;
+      const normal = slot.items.some((x) => x.id === cur);
+      const legendary =
+        typeof LEGENDARY !== 'undefined' &&
+        LEGENDARY.some((x) => x.id === cur && x.slot === slot.id);
+      if (!normal && !legendary) h.slots[slot.id] = slot.items[0].id;
     });
 
     if (!Array.isArray(h.inventory)) h.inventory = [];
@@ -14076,7 +15074,7 @@ body[data-season="spring"] .hero::after {
       }
     });
     const chal = done.length * 120;
-    const goals = (st.goals || []).filter((g) => g.target > 0 && MF.goalSaved(g) >= g.target).length * 200;
+    const goals = (st.goals || []).filter((g) => g.target > 0 && MF.goalSaved(g) >= g.target).length * 120;
 
     let streak = 0;
     const dates = {};
@@ -14091,6 +15089,10 @@ body[data-season="spring"] .hero::after {
       d.setDate(d.getDate() - 1);
     }
 
+    /* серия заходов даёт опыт отдельно от серии трат */
+    const visits = H.visitInfo();
+    const visitXp = Math.min(visits.streak, 120) * 6;
+
     return {
       tx: tx,
       achievements: ach,
@@ -14098,6 +15100,8 @@ body[data-season="spring"] .hero::after {
       goals: goals,
       streak: streak * 10,
       days: streak,
+      visitStreak: visits.streak,
+      visitXp: visitXp,
       challengesDone: done.length
     };
   };
@@ -14114,11 +15118,126 @@ body[data-season="spring"] .hero::after {
     return { level: level, inLevel: rest, need: need, percent: Math.min(100, Math.round((rest / need) * 100)) };
   };
 
+
+  /* ------------------------ легендарные вещи --------------------------- */
+  /* выпадают из сундуков с шансом 3% и с арены — 1%. Сильнее любых обычных. */
+  const LEGENDARY = [
+    {
+      id: 'leg_lightsaber',
+      slot: 'weapon',
+      name: 'Световой меч',
+      icon: '⚔️',
+      str: 42,
+      agi: 12,
+      int: 14,
+      ref: 'Звёздные войны',
+      flavor: '«Это не игрушка». В магазине, правда, было написано иначе.'
+    },
+    {
+      id: 'leg_capshield',
+      slot: 'armor',
+      name: 'Щит Капитана',
+      icon: '🛡️',
+      str: 14,
+      agi: 40,
+      int: 12,
+      ref: 'Marvel',
+      flavor: '«Я могу так экономить весь день». — сказал он и ушёл на распродажу.'
+    },
+    {
+      id: 'leg_vaderhelm',
+      slot: 'helmet',
+      name: 'Шлем Тёмного Лорда',
+      icon: '🪖',
+      str: 26,
+      agi: 8,
+      int: 34,
+      ref: 'Звёздные войны',
+      flavor: '«Я нахожу отсутствие накоплений… удручающим».'
+    },
+    {
+      id: 'leg_sonicboots',
+      slot: 'boots',
+      name: 'Кроссовки Соника',
+      icon: '👟',
+      str: 6,
+      agi: 52,
+      int: 6,
+      ref: 'Sonic the Hedgehog',
+      flavor: 'Быстрее, чем доставка за 15 минут. И это уже достижение.'
+    },
+    {
+      id: 'leg_onering',
+      slot: 'amulet',
+      name: 'Кольцо Всевластия',
+      icon: '💍',
+      str: 8,
+      agi: 8,
+      int: 56,
+      ref: 'Властелин колец',
+      flavor: 'Одно кольцо, чтобы править бюджетом. И одно, чтобы найти его в отчёте.'
+    },
+    {
+      id: 'leg_witchersword',
+      slot: 'weapon',
+      name: 'Серебряный клинок ведьмака',
+      icon: '🗡️',
+      str: 38,
+      agi: 20,
+      int: 8,
+      ref: 'Ведьмак',
+      flavor: 'На «мелочь в кармане» не реагирует — только на крупные траты.'
+    },
+    {
+      id: 'leg_mushroom',
+      slot: 'helmet',
+      name: 'Гриб-1UP',
+      icon: '🍄',
+      str: 12,
+      agi: 12,
+      int: 36,
+      ref: 'Super Mario',
+      flavor: 'Одна лишняя жизнь в бюджете. Не злоупотребляйте.'
+    },
+    {
+      id: 'leg_briefcase',
+      slot: 'amulet',
+      name: 'Чемоданчик с деньгами',
+      icon: '💼',
+      str: 10,
+      agi: 10,
+      int: 40,
+      ref: 'Фильмы про ограбления',
+      flavor: '«Это не мои деньги». Классика жанра — как и перерасход.'
+    }
+  ];
+
+  /* предмет по id: обычный или легендарный */
+  function findItem(slotId, id) {
+    const slot = SLOTS.find((s) => s.id === slotId);
+    if (!slot) return null;
+    const normal = slot.items.find((x) => x.id === id);
+    if (normal) return normal;
+    return (
+      LEGENDARY.find((x) => x.id === id && x.slot === slotId) ||
+      LEGENDARY.find((x) => x.id === id) ||
+      null
+    );
+  }
+
   function equipped(h) {
     const out = {};
     SLOTS.forEach((slot) => {
-      out[slot.id] = slot.items.find((x) => x.id === h.slots[slot.id]) || slot.items[0];
-      out[slot.id].tier = slot.items.indexOf(out[slot.id]);
+      const found = findItem(slot.id, h.slots[slot.id]);
+      const item = found && found.slot === slot.id ? found : slot.items[0];
+      out[slot.id] = item;
+      out[slot.id].tier = slot.items.indexOf(item); /* -1 у легендарки */
+      out[slot.id].legendary = slot.items.indexOf(item) < 0;
+      /* у легендарки нет цены — иначе сумма превращалась в NaN */
+      out[slot.id].cost = Number(item.cost) || 0;
+      out[slot.id].str = Number(item.str) || 0;
+      out[slot.id].agi = Number(item.agi) || 0;
+      out[slot.id].int = Number(item.int) || 0;
     });
     return out;
   }
@@ -14127,11 +15246,11 @@ body[data-season="spring"] .hero::after {
     const st = MF.state;
     const h = hero();
     const xp = H.xpBreakdown();
-    const total = xp.tx + xp.achievements + xp.challenges + xp.goals + xp.streak;
+    const total = xp.tx + xp.achievements + xp.challenges + xp.goals + xp.streak + (xp.visitXp || 0);
     const lvl = H.levelFromXp(total);
 
     const eq = equipped(h);
-    const costs = SLOTS.reduce((s, slot) => s + eq[slot.id].cost, 0);
+    const costs = SLOTS.reduce((s, slot) => s + (Number(eq[slot.id].cost) || 0), 0);
 
     const earned = lvl.level - 1;
     const spentPoints = h.spent.str + h.spent.agi + h.spent.int;
@@ -14150,12 +15269,12 @@ body[data-season="spring"] .hero::after {
     });
 
     const earnedGold =
-      Object.keys(st.achievements || {}).length * 20 +
-      xp.challengesDone * 100 +
+      Object.keys(st.achievements || {}).length * 15 +
+      xp.challengesDone * 45 +
       (st.goals || []).filter((g) => g.target > 0 && MF.goalSaved(g) >= g.target).length * 200 +
       Math.floor(xp.tx / 10);
 
-    const gold = Math.max(0, earnedGold + h.bonusGold - costs);
+    const gold = Math.max(0, Math.round((Number(earnedGold) || 0) + (Number(h.bonusGold) || 0) - costs));
 
     /* сундуки: за уровни и за пройденные челленджи */
     const chestsTotal = lvl.level - 1 + xp.challengesDone;
@@ -14210,6 +15329,10 @@ body[data-season="spring"] .hero::after {
     const h = hero();
     const s = H.state();
     const cur = s.eq[id];
+    if (cur && cur.legendary) {
+      UI.toast('Легендарную вещь нельзя улучшить — она уже лучшая', 'good');
+      return;
+    }
     const idx = slot.items.indexOf(slot.items.find((x) => x.id === cur.id));
     const next = slot.items[idx + 1];
 
@@ -14248,14 +15371,116 @@ body[data-season="spring"] .hero::after {
     { id: 'common', name: 'обычный', color: '#94a3b8' },
     { id: 'rare', name: 'редкий', color: '#4cc3ff' },
     { id: 'epic', name: 'эпический', color: '#b06bff' },
-    { id: 'legend', name: 'легендарный', color: '#ffb020' }
+    { id: 'legend', name: 'легендарный', color: '#ffb020' },
+    { id: 'mythic', name: 'ЛЕГЕНДАРНЫЙ', color: '#ffd166' }
   ];
 
+
+  /* ------------------------ серия заходов ------------------------------ */
+  /* награды за количество дней подряд; выдаются один раз за серию */
+  const VISIT_REWARDS = [
+    { days: 3, gold: 20, xp: 30 },
+    { days: 7, gold: 45, xp: 80 },
+    { days: 14, gold: 80, xp: 150 },
+    { days: 30, gold: 150, xp: 300 },
+    { days: 60, gold: 260, xp: 500 },
+    { days: 100, gold: 400, xp: 800 }
+  ];
+
+  function visitState(h) {
+    if (!h.visit || typeof h.visit !== 'object') h.visit = { last: '', streak: 0, best: 0, claimed: [] };
+    if (!Array.isArray(h.visit.claimed)) h.visit.claimed = [];
+    return h.visit;
+  }
+
+  function isoShift(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+
+  H.visitRewards = VISIT_REWARDS;
+
+  /* регистрирует заход; возвращает, что изменилось */
+  H.visit = function () {
+    const h = hero();
+    const v = visitState(h);
+    const today = MF.todayISO();
+    const yesterday = isoShift(-1);
+    let isNew = false;
+    let reward = null;
+
+    if (v.last !== today) {
+      if (v.last === yesterday) v.streak += 1;
+      else v.streak = 1;
+      v.last = today;
+      v.best = Math.max(Number(v.best) || 0, v.streak);
+      isNew = true;
+
+      /* награда за достигнутую длину серии */
+      const hit = VISIT_REWARDS.filter((r) => v.streak >= r.days && v.claimed.indexOf(r.days) < 0).pop();
+      if (hit) {
+        v.claimed.push(hit.days);
+        h.bonusGold = (Number(h.bonusGold) || 0) + hit.gold;
+        v.lastReward = { days: hit.days, gold: hit.gold, xp: hit.xp };
+        reward = hit;
+      }
+      save();
+    }
+
+    return {
+      isNew: isNew,
+      streak: v.streak,
+      best: v.best,
+      reward: reward,
+      claimed: v.claimed.slice(),
+      next: VISIT_REWARDS.find((r) => v.streak < r.days) || null,
+      today: today
+    };
+  };
+
+  H.visitInfo = function () {
+    const h = hero();
+    const v = visitState(h);
+    return {
+      streak: v.streak || 0,
+      best: v.best || 0,
+      claimed: v.claimed.slice(),
+      next: VISIT_REWARDS.find((r) => (v.streak || 0) < r.days) || null
+    };
+  };
+
+  function ownedLegendary(itemId) {
+    const h = hero();
+    if (h.slots && Object.keys(h.slots).some((k) => h.slots[k] === itemId)) return true;
+    return (h.inventory || []).some((x) => x.itemId === itemId);
+  }
+
+  H.rollLegendary = function (chance) {
+    const p = typeof chance === 'number' ? chance : 0.03;
+    if (Math.random() >= p) return null;
+    const pool = LEGENDARY.filter((x) => !ownedLegendary(x.id));
+    if (!pool.length) return null;
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    return {
+      kind: 'item',
+      slot: item.slot,
+      slotName: (SLOTS.find((s) => s.id === item.slot) || {}).name || 'Снаряжение',
+      item: item,
+      rarity: 'mythic',
+      legendary: true
+    };
+  };
+
   function pickLoot() {
+    /* 3% — легендарная вещь */
+    const leg = H.rollLegendary(0.03);
+    if (leg) return leg;
+
     /* 55% — золото, 45% — предмет */
     if (Math.random() < 0.55) {
-      const amount = 40 + Math.floor(Math.random() * 12) * 15;
-      return { kind: 'gold', amount: amount, rarity: amount > 160 ? 'rare' : 'common' };
+      const amount = 12 + Math.floor(Math.random() * 12) * 6;
+      return { kind: 'gold', amount: amount, rarity: amount > 60 ? 'rare' : 'common' };
     }
     const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
     const idx = 1 + Math.floor(Math.random() * (slot.items.length - 1));
@@ -14320,14 +15545,20 @@ body[data-season="spring"] .hero::after {
 
     const rar = RARITY.find((r) => r.id === loot.rarity) || RARITY[0];
     UI.sheet({
-      title: '🎁 Находка',
-      subtitle: rar.name + ' лут',
+      title: loot.legendary ? '🌟 ЛЕГЕНДАРНАЯ НАХОДКА' : '🎁 Находка',
+      subtitle: loot.legendary ? 'выпала с шансом 3%' : rar.name + ' лут',
       body:
         `<div class="loot-box" style="border-color:${rar.color}66">` +
         `<div class="loot-ico" style="color:${rar.color}">${loot.kind === 'gold' ? '🪙' : loot.item.icon}</div>` +
         `<div class="loot-name">${loot.kind === 'gold' ? coin(loot.amount) + ' золота' : loot.item.name}</div>` +
         `<div class="loot-sub">${loot.kind === 'gold' ? 'пополнение казны' : loot.slotName + ' · ' + rarityText(loot.item)}</div>` +
         `</div>` +
+        (loot.legendary && loot.item && loot.item.flavor
+          ? `<div class="leg-flavor">` +
+            `<div class="leg-text">${UI.esc(loot.item.flavor)}</div>` +
+            `<div class="leg-ref">отсылка: ${UI.esc(loot.item.ref || '')}</div>` +
+            `</div>`
+          : '') +
         (loot.kind === 'item'
           ? `<p class="tiny" style="margin-top:12px">Предмет уже в коллекции. Надеть его можно бесплатно — откройте коллекцию ниже.</p>`
           : ''),
@@ -14372,29 +15603,77 @@ body[data-season="spring"] .hero::after {
   function slotCard(slot, item, next, gold) {
     const price = next ? next.cost - item.cost : 0;
     const can = next && gold >= price;
+    const isLeg = !!(item && item.flavor);
     return (
-      `<div class="hero-item">` +
+      `<div class="hero-item ${isLeg ? 'leg' : ''}">` +
       `<div class="hero-item-ico">${item.icon}</div>` +
       `<div class="hero-item-body">` +
-      `<div class="hero-item-name">${UI.esc(item.name)}</div>` +
+      `<div class="hero-item-name">${UI.esc(item.name)}${isLeg ? ' <span class="leg-tag">легендарная</span>' : ''}</div>` +
       `<div class="hero-item-bonus">${rarityText(item) || 'без бонусов'}</div>` +
-      (next
-        ? `<button class="btn btn-ghost btn-sm hero-up" data-action="hero-upgrade" data-id="${slot.id}" ${
-            can ? '' : 'disabled'
-          }>${UI.esc(slot.name)} → ${next.icon} · ${coin(price)} 🪙</button>`
-        : `<div class="tiny">Максимальный уровень</div>`) +
+      (isLeg
+        ? `<div class="leg-flavor small"><div class="leg-text">${UI.esc(item.flavor)}</div><div class="leg-ref">отсылка: ${UI.esc(
+            item.ref || ''
+          )}</div></div>`
+        : '') +
+      (isLeg
+        ? `<div class="tiny leg-best">Лучшая вещь в слоте — улучшать нечего</div>`
+        : next
+          ? `<button class="btn btn-ghost btn-sm hero-up" data-action="hero-upgrade" data-id="${slot.id}" ${
+              can ? '' : 'disabled'
+            }>${UI.esc(slot.name)} → ${next.icon} · ${coin(price)} 🪙</button>`
+          : `<div class="tiny">Максимальный уровень</div>`) +
       `</div></div>`
+    );
+  }
+
+
+  /* --------------------- карточка серии заходов ------------------------ */
+  function visitCard() {
+    const info = H.visitInfo();
+    const next = info.next;
+    const rewards = VISIT_REWARDS.map(function (r) {
+      const done = info.claimed.indexOf(r.days) >= 0;
+      const near = info.streak >= r.days;
+      return (
+        '<div class="visit-step ' + (done ? 'done' : near ? 'now' : '') + '">' +
+        '<div class="vs-days">' + r.days + '</div>' +
+        '<div class="vs-gold">' + r.gold + ' 🪙</div>' +
+        '<div class="vs-xp">+' + r.xp + ' XP</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    const left = next ? next.days - info.streak : 0;
+
+    return (
+      '<div class="card visit-card">' +
+      '<div class="card-head"><span class="card-title">🔥 Серия заходов</span>' +
+      '<span class="card-link">' + info.streak + ' дн. · рекорд ' + info.best + '</span></div>' +
+      '<p class="tiny" style="margin-bottom:8px">' +
+      (info.streak === 0
+        ? 'Заходите каждый день — награды за 3, 7, 14, 30, 60 и 100 дней подряд'
+        : next
+          ? 'Ещё ' + left + ' ' + MF.plural(left, 'день', 'дня', 'дней') + ' — и награда ' + next.gold + ' 🪙 и +' + next.xp + ' XP'
+          : 'Все награды за серию собраны — держите темп') +
+      '</p>' +
+      '<div class="visit-row">' + rewards + '</div>' +
+      '</div>'
     );
   }
 
   H.screenHtml = function () {
     const s = H.state();
+    const tierOf = (slotId) => {
+      const it = s.eq[slotId];
+      if (!it) return 0;
+      return it.legendary ? 4 : Math.max(0, it.tier);
+    };
     const eqTiers = {
-      weapon: s.eq.weapon.tier,
-      armor: s.eq.armor.tier,
-      helmet: s.eq.helmet.tier,
-      boots: s.eq.boots.tier,
-      amulet: s.eq.amulet.tier
+      weapon: tierOf('weapon'),
+      armor: tierOf('armor'),
+      helmet: tierOf('helmet'),
+      boots: tierOf('boots'),
+      amulet: tierOf('amulet')
     };
 
     const costumeChips = COSTUMES.map((c) => {
@@ -14441,6 +15720,7 @@ body[data-season="spring"] .hero::after {
       (s.chests > 0
         ? `<button class="btn btn-primary btn-block loot-btn" data-action="hero-chest">🎁 Открыть сундук · ${s.chests}</button>`
         : `<button class="btn btn-ghost btn-block loot-btn" disabled>🎁 Сундуков нет · новый за уровень</button>`) +
+      visitCard() +
       `<div class="section-head"><h2>Характеристики</h2>` +
       `<span class="card-link">${s.free} очк. свободно</span></div>` +
       `<div class="hero-stats">` +
@@ -15451,6 +16731,235 @@ body[data-season="spring"] .hero::after {
   };
 })(window.MF);
 
+
+</script>
+    <script>
+/* js/family.js */
+/* =========================================================================
+   MoneyFlow — семейный режим без сервера
+   Два человека обмениваются JSON-копиями, приложение объединяет данные по id.
+   Ничего никуда не отправляется: только файлы между устройствами.
+   ========================================================================= */
+(function (root) {
+  const MF = root.MF || (root.MF = {});
+  const FM = (MF.family = {});
+  const UI = MF.UI;
+  const esc = (s) => UI.esc(s);
+
+  const KEYED = ['transactions', 'goals', 'loans', 'debts', 'accounts', 'categories', 'recurring'];
+
+  function byId(list) {
+    const map = {};
+    (list || []).forEach(function (item) {
+      if (item && item.id) map[item.id] = item;
+    });
+    return map;
+  }
+
+  function txKey(t) {
+    return [
+      t.date,
+      Math.round(Number(t.amount) * 100),
+      t.type,
+      t.accountId || '',
+      String(t.note || '').trim().toLowerCase()
+    ].join('|');
+  }
+
+  /* объединяет два состояния: base — текущее, incoming — из файла */
+  FM.merge = function (base, incoming) {
+    if (!incoming || typeof incoming !== 'object') return { state: base, stats: {}, added: 0, empty: true };
+
+    const out = JSON.parse(JSON.stringify(base || {}));
+    const stats = {};
+    let added = 0;
+
+    KEYED.forEach(function (key) {
+      if (!Array.isArray(incoming[key])) return;
+      if (!Array.isArray(out[key])) out[key] = [];
+      const have = byId(out[key]);
+      const seenTx = {};
+      if (key === 'transactions') {
+        out[key].forEach(function (t) {
+          seenTx[txKey(t)] = true;
+        });
+      }
+
+      incoming[key].forEach(function (item) {
+        if (!item) return;
+        if (item.id && have[item.id]) {
+          /* уже есть — объединяем вложенные платежи, если они есть */
+          const target = have[item.id];
+          if (Array.isArray(item.payments) && Array.isArray(target.payments)) {
+            const pIds = {};
+            target.payments.forEach(function (p) {
+              if (p && p.id) pIds[p.id] = true;
+            });
+            item.payments.forEach(function (p) {
+              if (p && p.id && !pIds[p.id]) {
+                target.payments.push(p);
+                stats[key + '.payments'] = (stats[key + '.payments'] || 0) + 1;
+                added++;
+              }
+            });
+          }
+          return;
+        }
+        if (key === 'transactions') {
+          const k = txKey(item);
+          if (seenTx[k]) return;
+          seenTx[k] = true;
+        }
+        out[key].push(item);
+        if (item.id) have[item.id] = item;
+        stats[key] = (stats[key] || 0) + 1;
+        added++;
+      });
+    });
+
+    /* бюджеты по месяцам: объединяем лимиты, свои значения не теряем */
+    if (incoming.budgets && typeof incoming.budgets === 'object') {
+      out.budgets = out.budgets || {};
+      Object.keys(incoming.budgets).forEach(function (month) {
+        const src = incoming.budgets[month] || {};
+        const dst = out.budgets[month] || {};
+        out.budgets[month] = {
+          total: dst.total || src.total || 0,
+          limits: Object.assign({}, src.limits || {}, dst.limits || {}),
+          reserve: dst.reserve || src.reserve || 0
+        };
+      });
+    }
+
+    /* курсы валют: недостающие добавляем */
+    if (incoming.rates && typeof incoming.rates === 'object') {
+      out.rates = Object.assign({}, incoming.rates, out.rates || {});
+    }
+
+    return { state: out, stats: stats, added: added, empty: added === 0 };
+  };
+
+  function human(stats) {
+    const map = {
+      transactions: 'операций',
+      goals: 'целей',
+      loans: 'кредитов',
+      debts: 'долгов',
+      accounts: 'счетов',
+      categories: 'категорий',
+      recurring: 'регулярных платежей',
+      'loans.payments': 'платежей по кредитам',
+      'debts.payments': 'платежей по долгам'
+    };
+    return Object.keys(stats)
+      .filter(function (k) {
+        return stats[k] > 0;
+      })
+      .map(function (k) {
+        return stats[k] + ' ' + (map[k] || k);
+      })
+      .join(', ');
+  }
+
+  /* ------------------------------ экран -------------------------------- */
+  FM.open = function () {
+    UI.sheet({
+      title: 'Семейный режим',
+      subtitle: 'общий бюджет без сервера — через файлы',
+      body:
+        `<p class="tiny" style="margin-bottom:14px">Данные никуда не отправляются. Вы обмениваетесь копиями, ` +
+        `приложение объединяет записи по идентификаторам: повторного добавления не будет.</p>` +
+        `<div class="family-steps">` +
+        `<div class="fam-step"><b>1</b><span>Вы: «Поделиться копией» → отправьте файл партнёру</span></div>` +
+        `<div class="fam-step"><b>2</b><span>Партнёр: присылает вам свою копию</span></div>` +
+        `<div class="fam-step"><b>3</b><span>Вы: «Объединить с копией» → выберите его файл</span></div>` +
+        `</div>` +
+        `<div class="hint-row" id="familyHint">Пока ничего не выбрано</div>`,
+      footer:
+        `<button class="btn btn-ghost" data-action="family-export">Поделиться копией</button>` +
+        `<button class="btn btn-primary" data-action="family-join">Объединить с копией</button>`,
+      wide: true
+    });
+  };
+
+  FM.exportForPartner = function () {
+    const payload = JSON.parse(JSON.stringify(MF.state));
+    payload._family = { at: MF.todayISO(), app: 'MoneyFlow', version: 1 };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'moneyflow-для-семьи-' + MF.todayISO() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 2000);
+    if (MF.first && MF.first.markBackup) MF.first.markBackup();
+    UI.toast('Копия сохранена — отправьте файл партнёру', 'good');
+  };
+
+  FM.openJoin = function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.addEventListener('change', function () {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        let data = null;
+        try {
+          data = JSON.parse(String(reader.result || ''));
+        } catch (e) {
+          UI.toast('Файл повреждён или это не копия MoneyFlow', 'bad');
+          return;
+        }
+        FM.preview(data, file.name);
+      };
+      reader.readAsText(file, 'utf-8');
+    });
+    input.click();
+  };
+
+  FM.preview = function (data, name) {
+    const res = FM.merge(MF.state, data);
+    const text = res.added ? human(res.stats) : 'новых записей нет';
+
+    UI.sheet({
+      title: 'Объединить данные',
+      subtitle: esc(name || 'файл'),
+      body:
+        `<div class="loot-box" style="border-color:rgba(124,140,255,.4)">` +
+        `<div class="loot-ico">👨‍👩‍👧</div>` +
+        `<div class="loot-name">${res.added ? '+' + res.added : 'нет новых'}</div>` +
+        `<div class="loot-sub">${esc(text)}</div>` +
+        `</div>` +
+        `<p class="tiny" style="margin-top:12px">Ваши записи не изменятся: добавляются только те, которых у вас нет. ` +
+        `Совпадающие по id и по дате-сумме-описанию пропускаются.</p>`,
+      footer:
+        `<button class="btn btn-ghost" data-action="sheet-close">Отмена</button>` +
+        `<button class="btn btn-primary" data-action="family-apply" ${res.added ? '' : 'disabled'}>Объединить</button>`,
+      wide: true
+    });
+
+    FM.pending = res;
+  };
+
+  FM.apply = function () {
+    if (!FM.pending || !FM.pending.added) {
+      UI.toast('Нечего объединять', '');
+      return;
+    }
+    MF.setState(FM.pending.state);
+    const added = FM.pending.added;
+    FM.pending = null;
+    UI.closeSheet();
+    UI.toast('Объединено: ' + added + ' записей', 'good');
+    if (MF.App && MF.App.render) MF.App.render();
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
     <script>
@@ -16854,6 +18363,890 @@ body[data-season="spring"] .hero::after {
 
 </script>
     <script>
+/* js/i18n.js */
+/* =========================================================================
+   MoneyFlow — языки интерфейса
+   Переводит навигацию, заголовки, кнопки и разделы настроек.
+   Числа, даты и названия месяцев подстраиваются под язык.
+   ========================================================================= */
+(function (root) {
+  const MF = root.MF || (root.MF = {});
+  const I = (MF.i18n = {});
+
+  I.langs = [
+    { id: 'ru', name: 'Русский', locale: 'ru-RU', flag: '🇷🇺' },
+    { id: 'en', name: 'English', locale: 'en-US', flag: '🇬🇧' },
+    { id: 'es', name: 'Español', locale: 'es-ES', flag: '🇪🇸' },
+    { id: 'de', name: 'Deutsch', locale: 'de-DE', flag: '🇩🇪' },
+    { id: 'fr', name: 'Français', locale: 'fr-FR', flag: '🇫🇷' },
+    { id: 'zh', name: '中文', locale: 'zh-CN', flag: '🇨🇳' }
+  ];
+
+  I.locale = function () {
+    const lang = I.current();
+    return (I.langs.find((l) => l.id === lang) || I.langs[0]).locale;
+  };
+
+  I.current = function () {
+    const id = MF.prefs && MF.prefs.lang;
+    return I.langs.some((l) => l.id === id) ? id : 'ru';
+  };
+
+  /* ------------------------- словарь интерфейса ------------------------ */
+  /* ключ — русский текст как он есть в разметке */
+  const DICT = {
+    /* навигация */
+    'Обзор': ['Overview', 'Resumen', 'Übersicht', 'Aperçu', '概览'],
+    'Операции': ['Transactions', 'Operaciones', 'Buchungen', 'Opérations', '交易'],
+    'Бюджет': ['Budget', 'Presupuesto', 'Budget', 'Budget', '预算'],
+    'Цели': ['Goals', 'Metas', 'Ziele', 'Objectifs', '目标'],
+    'Долги': ['Debts', 'Deudas', 'Schulden', 'Dettes', '债务'],
+    'Награды': ['Rewards', 'Premios', 'Belohnungen', 'Récompenses', '奖励'],
+    'Анализ': ['Analysis', 'Análisis', 'Analyse', 'Analyse', '分析'],
+    'Аналитика': ['Analytics', 'Analítica', 'Analyse', 'Analytique', '分析'],
+    'Портфель': ['Portfolio', 'Cartera', 'Portfolio', 'Portefeuille', '投资'],
+    'Платежи': ['Payments', 'Pagos', 'Zahlungen', 'Paiements', '付款'],
+    'Помощник': ['Assistant', 'Asistente', 'Assistent', 'Assistant', '助手'],
+    'Поиск': ['Search', 'Buscar', 'Suche', 'Recherche', '搜索'],
+    'Настройки': ['Settings', 'Ajustes', 'Einstellungen', 'Réglages', '设置'],
+    'Герой': ['Hero', 'Héroe', 'Held', 'Héros', '英雄'],
+
+    /* заголовки экранов */
+    'Добрый день': ['Good afternoon', 'Buenas tardes', 'Guten Tag', 'Bonjour', '下午好'],
+    'Доброе утро': ['Good morning', 'Buenos días', 'Guten Morgen', 'Bonjour', '早上好'],
+    'Добрый вечер': ['Good evening', 'Buenas noches', 'Guten Abend', 'Bonsoir', '晚上好'],
+
+    /* ключевые подписи Обзора */
+    'ВСЕГО НА СЧЕТАХ': ['TOTAL BALANCE', 'TOTAL EN CUENTAS', 'GESAMT', 'SOLDE TOTAL', '总余额'],
+    'Всего на счетах': ['Total balance', 'Total en cuentas', 'Gesamtvermögen', 'Solde total', '总余额'],
+    'Доходы': ['Income', 'Ingresos', 'Einnahmen', 'Revenus', '收入'],
+    'Расходы': ['Expenses', 'Gastos', 'Ausgaben', 'Dépenses', '支出'],
+    'В цели': ['To goals', 'A metas', 'In Ziele', 'Vers objectifs', '存目标'],
+    'Бюджет на месяц': ['Monthly budget', 'Presupuesto mensual', 'Monatsbudget', 'Budget mensuel', '月度预算'],
+    'Цели и накопления': ['Goals & savings', 'Metas y ahorros', 'Ziele & Sparen', 'Objectifs & épargne', '目标与储蓄'],
+    'Где деньги': ['Where the money is', 'Dónde está el dinero', 'Wo das Geld ist', 'Où est l’argent', '资金分布'],
+    'Сегодня можно': ['Safe to spend', 'Puedes gastar', 'Heute verfügbar', 'Disponible', '今日可用'],
+    'Умный расчёт': ['Smart calc', 'Cálculo inteligente', 'Kluge Rechnung', 'Calcul intelligent', '智能核算'],
+    'Челлендж месяца': ['Monthly challenge', 'Reto del mes', 'Monats-Challenge', 'Défi du mois', '本月挑战'],
+    'Достижения': ['Achievements', 'Logros', 'Erfolge', 'Succès', '成就'],
+    'Кредиты и долги': ['Loans & debts', 'Créditos y deudas', 'Kredite & Schulden', 'Crédits & dettes', '贷款与债务'],
+    'Куда уходят деньги': ['Where money goes', 'A dónde va el dinero', 'Wohin das Geld geht', 'Où va l’argent', '钱花在哪'],
+    'Непредвиденные траты': ['Unexpected spending', 'Gastos imprevistos', 'Unerwartete Ausgaben', 'Dépenses imprévues', '意外支出'],
+    'Резервная копия': ['Backup', 'Copia de seguridad', 'Sicherung', 'Sauvegarde', '备份'],
+    'Настройка за минуту': ['Setup in a minute', 'Configura en un minuto', 'Einrichtung in einer Minute', 'Config en une minute', '一分钟设置'],
+
+    /* кнопки и действия */
+    'Добавить': ['Add', 'Añadir', 'Hinzufügen', 'Ajouter', '添加'],
+    'Сохранить': ['Save', 'Guardar', 'Speichern', 'Enregistrer', '保存'],
+    'Отмена': ['Cancel', 'Cancelar', 'Abbrechen', 'Annuler', '取消'],
+    'Удалить': ['Delete', 'Eliminar', 'Löschen', 'Supprimer', '删除'],
+    'Готово': ['Done', 'Listo', 'Fertig', 'Terminé', '完成'],
+    'Закрыть': ['Close', 'Cerrar', 'Schließen', 'Fermer', '关闭'],
+    'Далее': ['Next', 'Siguiente', 'Weiter', 'Suivant', '下一步'],
+    'Назад': ['Back', 'Atrás', 'Zurück', 'Retour', '返回'],
+    'Показать всё': ['Show all', 'Mostrar todo', 'Alles zeigen', 'Tout afficher', '显示全部'],
+    'Простой режим': ['Simple mode', 'Modo simple', 'Einfacher Modus', 'Mode simple', '简约模式'],
+    'Все цели': ['All goals', 'Todas las metas', 'Alle Ziele', 'Tous les objectifs', '全部目标'],
+    'Карточка': ['Card', 'Tarjeta', 'Karte', 'Carte', '卡片'],
+    'Начать': ['Start', 'Empezar', 'Starten', 'Commencer', '开始'],
+    'Скачать': ['Download', 'Descargar', 'Herunterladen', 'Télécharger', '下载'],
+
+    /* разделы настроек */
+    'Счета': ['Accounts', 'Cuentas', 'Konten', 'Comptes', '账户'],
+    'Категории расходов': ['Expense categories', 'Categorías de gastos', 'Ausgabenkategorien', 'Catégories de dépenses', '支出分类'],
+    'Оформление': ['Appearance', 'Apariencia', 'Aussehen', 'Apparence', '外观'],
+    'Данные': ['Data', 'Datos', 'Daten', 'Données', '数据'],
+    'Приложение': ['App', 'Aplicación', 'App', 'Application', '应用'],
+    'Язык': ['Language', 'Idioma', 'Sprache', 'Langue', '语言'],
+    'Язык интерфейса': ['Interface language', 'Idioma de la interfaz', 'Sprache der Oberfläche', 'Langue de l’interface', '界面语言'],
+    'Тема': ['Theme', 'Tema', 'Design', 'Thème', '主题'],
+    'Шрифт': ['Font', 'Fuente', 'Schrift', 'Police', '字体'],
+    'Масштаб интерфейса': ['Interface scale', 'Escala de la interfaz', 'Skalierung', 'Échelle de l’interface', '界面缩放'],
+    'Эффекты': ['Effects', 'Efectos', 'Effekte', 'Effets', '效果'],
+    'Блоки на Обзоре': ['Dashboard blocks', 'Bloques del resumen', 'Blöcke der Übersicht', 'Blocs de l’aperçu', '概览区块'],
+    'Фон приложения': ['App background', 'Fondo de la app', 'App-Hintergrund', 'Fond de l’app', '应用背景'],
+    'Стиль интерфейса': ['Interface style', 'Estilo de la interfaz', 'Oberflächenstil', 'Style de l’interface', '界面风格'],
+    'Стиль карточек': ['Card style', 'Estilo de tarjetas', 'Kartenstil', 'Style des cartes', '卡片风格'],
+    'Плотность': ['Density', 'Densidad', 'Dichte', 'Densité', '密度'],
+    'Форма углов': ['Corner shape', 'Forma de esquinas', 'Eckenform', 'Forme des coins', '圆角'],
+    'Акцентный цвет': ['Accent color', 'Color de acento', 'Akzentfarbe', 'Couleur d’accent', '强调色'],
+    'Иконка приложения': ['App icon', 'Icono de la app', 'App-Symbol', 'Icône de l’app', '应用图标'],
+    'Нижняя панель': ['Bottom bar', 'Barra inferior', 'Untere Leiste', 'Barre inférieure', '底部栏'],
+    'Найти': ['Find', 'Buscar', 'Suchen', 'Trouver', '查找'],
+    'Нет операций': ['No transactions', 'Sin operaciones', 'Keine Buchungen', 'Aucune opération', '暂无交易'],
+
+
+    /* частые слова в динамических строках */
+    'операция': ['transaction', 'operación', 'Buchung', 'opération', '交易'],
+    'операции': ['transactions', 'operaciones', 'Buchungen', 'opérations', '交易'],
+    'операций': ['transactions', 'operaciones', 'Buchungen', 'opérations', '交易'],
+    'месяц': ['month', 'mes', 'Monat', 'mois', '月'],
+    'месяца': ['month', 'mes', 'Monat', 'mois', '月'],
+    'дней': ['days', 'días', 'Tagen', 'jours', '天'],
+    'день': ['day', 'día', 'Tag', 'jour', '天'],
+    'дня': ['days', 'días', 'Tagen', 'jours', '天'],
+    'подряд': ['in a row', 'seguidos', 'in Folge', 'de suite', '连续'],
+    'серия': ['streak', 'racha', 'Serie', 'série', '连续'],
+    'за месяц': ['per month', 'por mes', 'pro Monat', 'par mois', '每月'],
+    'без бонусов': ['no bonus', 'sin bonus', 'ohne Bonus', 'sans bonus', '无加成'],
+    'уровень': ['level', 'nivel', 'Level', 'niveau', '等级'],
+    'уровня': ['level', 'nivel', 'Level', 'niveau', '等级'],
+    'силы': ['power', 'poder', 'Kraft', 'puissance', '力量'],
+    'золото': ['gold', 'oro', 'Gold', 'or', '金币'],
+    'сегодня': ['today', 'hoy', 'heute', 'aujourd’hui', '今天'],
+    'всего': ['total', 'total', 'gesamt', 'total', '共'],
+    'Советы и экономия': ['Tips & savings', 'Consejos y ahorro', 'Tipps & Sparen', 'Conseils & économies', '建议与节省'],
+    'Прогноз трат': ['Spending forecast', 'Pronóstico de gastos', 'Ausgabenprognose', 'Prévision des dépenses', '支出预测'],
+    'Экономия': ['Savings', 'Ahorro', 'Ersparnis', 'Économies', '节省'],
+    'Сэкономлено': ['Saved', 'Ahorrado', 'Gespart', 'Économisé', '已节省'],
+
+
+    'до уровня': ['to level', 'al nivel', 'bis Level', 'au niveau', '升级到'],
+    'пополнения': ['top-ups', 'aportes', 'Einzahlungen', 'versements', '存入'],
+    'пополнение': ['top-up', 'aporte', 'Einzahlung', 'versement', '存入'],
+    'Без фона': ['No background', 'Sin fondo', 'Ohne Hintergrund', 'Sans fond', '无背景'],
+    'Своя картинка': ['Custom image', 'Imagen propia', 'Eigenes Bild', 'Image perso', '自定义图片'],
+    'Только главное': ['Essentials only', 'Solo lo esencial', 'Nur das Wichtigste', 'Essentiel', '仅主要'],
+    'Всего': ['All', 'Todo', 'Alle', 'Tout', '全部'],
+
+    'портфель': ['portfolio', 'cartera', 'Portfolio', 'portefeuille', '投资'],
+    'счета': ['accounts', 'cuentas', 'Konten', 'comptes', '账户'],
+    'на счетах': ['on accounts', 'en cuentas', 'auf Konten', 'sur les comptes', '账户余额'],
+
+    /* месяцы */
+    'Январь': ['January', 'Enero', 'Januar', 'Janvier', '一月'],
+    'Февраль': ['February', 'Febrero', 'Februar', 'Février', '二月'],
+    'Март': ['March', 'Marzo', 'März', 'Mars', '三月'],
+    'Апрель': ['April', 'Abril', 'April', 'Avril', '四月'],
+    'Май': ['May', 'Mayo', 'Mai', 'Mai', '五月'],
+    'Июнь': ['June', 'Junio', 'Juni', 'Juin', '六月'],
+    'Июль': ['July', 'Julio', 'Juli', 'Juillet', '七月'],
+    'Август': ['August', 'Agosto', 'August', 'Août', '八月'],
+    'Сентябрь': ['September', 'Septiembre', 'September', 'Septembre', '九月'],
+    'Октябрь': ['October', 'Octubre', 'Oktober', 'Octobre', '十月'],
+    'Ноябрь': ['November', 'Noviembre', 'November', 'Novembre', '十一月'],
+    'Декабрь': ['December', 'Diciembre', 'Dezember', 'Décembre', '十二月']
+  };
+
+  const MONTH_KEYS = [
+    ['Январь', 'янв', 'January', 'Jan'],
+    ['Февраль', 'фев', 'February', 'Feb'],
+    ['Март', 'мар', 'March', 'Mar'],
+    ['Апрель', 'апр', 'April', 'Apr'],
+    ['Май', 'май', 'May', 'May'],
+    ['Июнь', 'июн', 'June', 'Jun'],
+    ['Июль', 'июл', 'July', 'Jul'],
+    ['Август', 'авг', 'August', 'Aug'],
+    ['Сентябрь', 'сен', 'September', 'Sep'],
+    ['Октябрь', 'окт', 'October', 'Oct'],
+    ['Ноябрь', 'ноя', 'November', 'Nov'],
+    ['Декабрь', 'дек', 'December', 'Dec']
+  ];
+
+  /* индекс языка в массиве переводов */
+  function index() {
+    const lang = I.current();
+    return Math.max(0, I.langs.findIndex((l) => l.id === lang));
+  }
+
+  I.t = function (ru) {
+    if (I.current() === 'ru') return ru;
+    const row = DICT[ru];
+    if (!row) return ru;
+    const value = row[index() - 1];
+    return value || ru;
+  };
+
+  I.month = function (n, short) {
+    const row = MONTH_KEYS[Math.max(0, Math.min(11, n - 1))];
+    const lang = I.current();
+    if (lang === 'ru') return short ? row[1] : row[0];
+    /* английские названия; для остальных языков — через Intl */
+    try {
+      return new Intl.DateTimeFormat(I.locale(), {
+        month: short ? 'short' : 'long',
+        timeZone: 'UTC'
+      }).format(new Date(Date.UTC(2024, n - 1, 15)));
+    } catch (e) {
+      return short ? row[3] : row[2];
+    }
+  };
+
+  /* перевод готовой разметки: точное совпадение текста */
+  I.applyDom = function (rootEl) {
+    if (I.current() === 'ru' || !rootEl) return 0;
+    let changed = 0;
+
+    const walk = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
+    const jobs = [];
+    let node = walk.nextNode();
+    while (node) {
+      const raw = node.nodeValue || '';
+      const key = raw.trim();
+      if (key && DICT[key]) jobs.push([node, key]);
+      node = walk.nextNode();
+    }
+
+    jobs.forEach(function (job) {
+      const node = job[0];
+      const key = job[1];
+      const translated = I.t(key);
+      if (translated !== key) {
+        node.nodeValue = String(node.nodeValue).replace(key, translated);
+        changed++;
+      }
+    });
+
+
+    /* подстроки внутри фраз: эмодзи, числа, знаки вокруг */
+    const keys = Object.keys(DICT).sort(function (a, b) {
+      return b.length - a.length;
+    });
+
+    function isLetter(ch) {
+      return !!ch && /[А-Яа-яЁёA-Za-z]/.test(ch);
+    }
+
+    /* замена только целого слова — «день» не трогает «деньги» */
+    function replaceWord(text, ru, tr) {
+      let out = '';
+      let i = 0;
+      while (i <= text.length) {
+        const at = text.indexOf(ru, i);
+        if (at < 0) {
+          out += text.slice(i);
+          break;
+        }
+        const before = at > 0 ? text.charAt(at - 1) : '';
+        const after = text.charAt(at + ru.length);
+        out += text.slice(i, at);
+        if (!isLetter(before) && !isLetter(after)) out += tr;
+        else out += ru;
+        i = at + ru.length;
+      }
+      return out;
+    }
+
+    function translateText(text) {
+      let out = text;
+      for (let k = 0; k < keys.length; k++) {
+        const ru = keys[k];
+        if (out.indexOf(ru) < 0) continue;
+        const tr = I.t(ru);
+        if (!tr || tr === ru) continue;
+        out = replaceWord(out, ru, tr);
+      }
+      return out;
+    }
+
+    const walk2 = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
+    let n2 = walk2.nextNode();
+    while (n2) {
+      const before = n2.nodeValue || '';
+      if (/[А-Яа-яЁё]/.test(before)) {
+        const after = translateText(before);
+        if (after !== before) {
+          n2.nodeValue = after;
+          changed++;
+        }
+      }
+      n2 = walk2.nextNode();
+    }
+
+    /* подсказки и подписи полей */
+    const attrs = ['title', 'aria-label', 'placeholder'];
+    rootEl.querySelectorAll('*').forEach(function (el) {
+      attrs.forEach(function (a) {
+        const v = el.getAttribute && el.getAttribute(a);
+        if (v && DICT[v.trim()]) {
+          el.setAttribute(a, I.t(v.trim()));
+          changed++;
+        }
+      });
+    });
+
+    return changed;
+  };
+
+  I.set = function (id) {
+    const lang = I.langs.find((l) => l.id === id) || I.langs[0];
+    MF.prefs.lang = lang.id;
+    MF.savePrefs();
+    if (MF.reloadLocale) MF.reloadLocale();
+    if (MF.App && MF.App.render) MF.App.render();
+    UI.toast('Язык: ' + lang.name, 'good');
+  };
+
+  I.pickerHtml = function () {
+    const cur = I.current();
+    const chips = I.langs
+      .map(
+        (l) =>
+          `<button type="button" class="lang-chip ${l.id === cur ? 'active' : ''}" data-action="lang-set" data-id="${l.id}">` +
+          `<span class="lang-flag">${l.flag}</span><span>${l.name}</span></button>`
+      )
+      .join('');
+    return `<div class="field"><span class="field-label">Язык интерфейса</span><div class="lang-grid">${chips}</div></div>`;
+  };
+
+  const UI = MF.UI || { toast: function () {} };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+    <script>
+/* js/looks.js */
+/* =========================================================================
+   MoneyFlow — стили интерфейса и шрифты
+   Стиль меняет не только цвета, но и форму, тени, шрифт и плотность.
+   ========================================================================= */
+(function (root) {
+  const MF = root.MF || (root.MF = {});
+  const L = (MF.looks = {});
+  const UI = MF.UI || { toast: function () {} };
+
+  /* --------------------------- стили ---------------------------------- */
+  L.styles = [
+    {
+      id: 'fintech',
+      name: 'Финтех',
+      hint: 'как сейчас: карточки, градиенты, скругления',
+      colors: ['#080b11', '#11161f', '#7c8cff']
+    },
+    {
+      id: 'terminal',
+      name: 'Терминал',
+      hint: 'моно-шрифт, острые углы, зелёный на чёрном',
+      colors: ['#040806', '#0a120d', '#35ff8b']
+    },
+    {
+      id: 'magazine',
+      name: 'Журнал',
+      hint: 'светлый фон, крупные заголовки, много воздуха',
+      colors: ['#f7f4ee', '#ffffff', '#1a1a1a']
+    },
+    {
+      id: 'neon',
+      name: 'Неон',
+      hint: 'тёмный, яркое свечение, большие скругления',
+      colors: ['#0a0616', '#150d28', '#ff2fb3']
+    },
+    {
+      id: 'minimal',
+      name: 'Минимал',
+      hint: 'без теней и градиентов, тонкие линии',
+      colors: ['#0e0e10', '#17171a', '#e6e6e6']
+    },
+    {
+      id: 'retro',
+      name: 'Ретро',
+      hint: 'тёплые цвета, жирные рамки, серифный шрифт',
+      colors: ['#1d1408', '#2a1e0d', '#ffb347']
+    }
+  ];
+
+  /* --------------------------- шрифты --------------------------------- */
+  L.fonts = [
+    {
+      id: 'system',
+      name: 'Система',
+      stack: '"Inter", "SF Pro Display", -apple-system, "Segoe UI", Roboto, Arial, sans-serif'
+    },
+    {
+      id: 'serif',
+      name: 'Сериф',
+      stack: 'Georgia, "Noto Serif", "Times New Roman", "PT Serif", serif'
+    },
+    {
+      id: 'mono',
+      name: 'Моно',
+      stack: '"Roboto Mono", "Droid Sans Mono", "JetBrains Mono", Consolas, "Courier New", monospace'
+    },
+    {
+      id: 'rounded',
+      name: 'Круглый',
+      stack: '"Nunito", "Comfortaa", "Trebuchet MS", "Segoe UI", Verdana, sans-serif'
+    },
+    {
+      id: 'condensed',
+      name: 'Плотный',
+      stack: '"Roboto Condensed", "Arial Narrow", "PT Sans Narrow", "Segoe UI", sans-serif'
+    }
+  ];
+
+  L.styleInfo = function (id) {
+    return L.styles.find((s) => s.id === id) || L.styles[0];
+  };
+
+  L.fontInfo = function (id) {
+    return L.fonts.find((f) => f.id === id) || L.fonts[0];
+  };
+
+  /* применяет выбранное */
+  L.apply = function () {
+    const style = L.styleInfo(MF.prefs.style).id;
+    const font = L.fontInfo(MF.prefs.font).id;
+    document.documentElement.dataset.style = style;
+    /* шрифт «система» не переопределяет шрифт стиля */
+    if (font === 'system') {
+      delete document.documentElement.dataset.font;
+      document.documentElement.style.removeProperty('--font');
+    } else {
+      document.documentElement.dataset.font = font;
+      document.documentElement.style.removeProperty('--font');
+    }
+    document.body.dataset.style = style;
+  };
+
+  L.setStyle = function (id) {
+    MF.prefs.style = L.styleInfo(id).id;
+    MF.savePrefs();
+    L.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast('Стиль: ' + L.styleInfo(id).name, 'good');
+  };
+
+  L.setFont = function (id) {
+    MF.prefs.font = L.fontInfo(id).id;
+    MF.savePrefs();
+    L.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast('Шрифт: ' + L.fontInfo(id).name, 'good');
+  };
+
+  /* ------------------------ интерфейс выбора -------------------------- */
+  L.pickerHtml = function () {
+    const cur = L.styleInfo(MF.prefs.style);
+    const curFont = L.fontInfo(MF.prefs.font);
+
+    const styles = L.styles
+      .map((s) => {
+        const active = s.id === cur.id;
+        return (
+          `<button type="button" class="look-chip ${active ? 'active' : ''}" data-action="style-set" data-id="${s.id}">` +
+          `<span class="look-prev">${s.colors.map((c) => `<i style="background:${c}"></i>`).join('')}</span>` +
+          `<span class="look-name">${s.name}</span></button>`
+        );
+      })
+      .join('');
+
+    const fonts = L.fonts
+      .map(
+        (f) =>
+          `<button type="button" class="font-chip ${f.id === curFont.id ? 'active' : ''}" data-action="font-set" data-id="${f.id}" style="font-family:${f.stack.replace(/"/g, '&quot;')}">${f.name}</button>`
+      )
+      .join('');
+
+    return (
+      `<div class="field"><span class="field-label">Стиль интерфейса</span>` +
+      `<div class="look-grid">${styles}</div>` +
+      `<div class="tiny" style="margin-top:6px">${cur.hint}</div></div>` +
+      `<div class="field"><span class="field-label">Шрифт</span>` +
+      `<div class="font-row">${fonts}</div></div>`
+    );
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+    <script>
+/* js/customize.js */
+/* =========================================================================
+   MoneyFlow — кастомизация интерфейса
+   Масштаб, тени, анимации, цифры и выбор блоков на Обзоре.
+   ========================================================================= */
+(function (root) {
+  const MF = root.MF || (root.MF = {});
+  const C = (MF.custom = {});
+  const UI = MF.UI || { toast: function () {} };
+
+  /* ------------------------- настройки -------------------------------- */
+  C.zooms = [
+    { id: '90', name: '90 %', value: 0.9 },
+    { id: '100', name: '100 %', value: 1 },
+    { id: '110', name: '110 %', value: 1.1 },
+    { id: '120', name: '120 %', value: 1.2 }
+  ];
+
+  /* блоки Обзора: подпись + как найти */
+  C.blocks = [
+    { id: 'onboard', name: 'Настройка за минуту' },
+    { id: 'backup', name: 'Резервная копия' },
+    { id: 'hero', name: 'Баланс' },
+    { id: 'heromini', name: 'Герой' },
+    { id: 'stats', name: 'Доходы и расходы' },
+    { id: 'safe', name: 'Сегодня можно' },
+    { id: 'budget', name: 'Бюджет и счета' },
+    { id: 'goals', name: 'Цели' },
+    { id: 'smart', name: 'Умный расчёт' },
+    { id: 'assistant', name: 'Помощник' },
+    { id: 'challenge', name: 'Челлендж' },
+    { id: 'awards', name: 'Достижения' },
+    { id: 'debts', name: 'Кредиты и долги' },
+    { id: 'analytics', name: 'Аналитика' },
+    { id: 'unexpected', name: 'Непредвиденные' }
+  ];
+
+  /* блоки, которые остаются в простом режиме */
+  C.simpleKeep = ['hero', 'heromini', 'stats', 'safe', 'budget', 'goals'];
+
+  C.hidden = function () {
+    return Array.isArray(MF.prefs.dashHidden) ? MF.prefs.dashHidden.slice() : [];
+  };
+
+  C.isHidden = function (id) {
+    return C.hidden().indexOf(id) >= 0;
+  };
+
+  C.toggleBlock = function (id) {
+    const list = C.hidden();
+    const i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(id);
+    MF.prefs.dashHidden = list;
+    MF.prefs.mode = 'full'; /* ручная настройка отменяет простой режим */
+    MF.savePrefs();
+    if (MF.App && MF.App.render) MF.App.render();
+    UI.toast(
+      (i >= 0 ? 'Блок показан: ' : 'Блок скрыт: ') + (C.blocks.find((b) => b.id === id) || {}).name,
+      ''
+    );
+  };
+
+  C.showAll = function () {
+    MF.prefs.dashHidden = [];
+    MF.prefs.mode = 'full';
+    MF.savePrefs();
+    if (MF.App && MF.App.render) MF.App.render();
+    UI.toast('Показаны все блоки', 'good');
+  };
+
+  C.applySimple = function (on) {
+    if (on) {
+      MF.prefs.dashHidden = C.blocks.map((b) => b.id).filter((id) => C.simpleKeep.indexOf(id) < 0);
+      MF.prefs.mode = 'simple';
+    } else {
+      MF.prefs.dashHidden = [];
+      MF.prefs.mode = 'full';
+    }
+    MF.savePrefs();
+    if (MF.App && MF.App.render) MF.App.render();
+  };
+
+  /* определяет, что за блок на Обзоре */
+  C.keyFor = function (el) {
+    const cls = String(el.className || '');
+    const text = String(el.textContent || '');
+
+    if (cls.indexOf('screen-head') >= 0) return 'head';
+    if (cls.indexOf('dash-mode') >= 0) return 'mode';
+    if (cls.indexOf('ob-card') >= 0) return 'onboard';
+    if (text.indexOf('Резервная копия') >= 0) return 'backup';
+    if (cls.indexOf('hero-mini') >= 0) return 'heromini';
+    if (cls.indexOf('hero') >= 0) return 'hero';
+    if (cls.indexOf('stat-grid') >= 0) return 'stats';
+    if (cls.indexOf('ask-card') >= 0) return 'assistant';
+    if (cls.indexOf('safe-card') >= 0) return 'safe';
+    if (cls.indexOf('challenge-card') >= 0) return 'challenge';
+    if (cls.indexOf('goal-scroll') >= 0) return 'goals';
+    if (cls.indexOf('sec-head') >= 0) return 'goals';
+    if (cls.indexOf('cols') >= 0 && text.indexOf('Бюджет на месяц') >= 0) return 'budget';
+    if (cls.indexOf('cols') >= 0) return 'analytics';
+    if (text.indexOf('Умный расчёт') >= 0) return 'smart';
+    if (text.indexOf('Достижения') >= 0) return 'awards';
+    if (text.indexOf('Кредиты и долги') >= 0) return 'debts';
+    if (text.indexOf('Непредвиденные') >= 0) return 'unexpected';
+    return 'other';
+  };
+
+  /* список скрытых блоков с учётом простого режима */
+  C.hiddenNow = function () {
+    if (MF.prefs.mode === 'simple') {
+      return C.blocks.map((b) => b.id).filter((id) => C.simpleKeep.indexOf(id) < 0);
+    }
+    return C.hidden();
+  };
+
+  /* шапка и переключатель не скрываются никогда */
+  C.alwaysVisible = { head: 1, mode: 1 };
+
+  /* ------------------------- применение ------------------------------- */
+  C.apply = function () {
+    const root = document.documentElement;
+    const zoom = C.zooms.find((z) => z.id === String(MF.prefs.zoom)) || C.zooms[1];
+
+    root.dataset.shadows = MF.prefs.shadows === false ? 'off' : 'on';
+    root.dataset.motion = MF.prefs.motion === false ? 'off' : 'on';
+    root.dataset.nums = MF.prefs.nums ? 'on' : 'off';
+    root.style.setProperty('--zoom', String(zoom.value));
+
+    const app = document.getElementById('app') || document.querySelector('.app');
+    if (app) app.style.zoom = zoom.value === 1 ? '' : String(zoom.value);
+  };
+
+  C.setZoom = function (id) {
+    MF.prefs.zoom = String(id);
+    MF.savePrefs();
+    C.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast('Масштаб: ' + (C.zooms.find((z) => z.id === String(id)) || {}).name, 'good');
+  };
+
+  C.toggle = function (key, label) {
+    MF.prefs[key] = !(MF.prefs[key] !== false);
+    if (key !== 'nums' && key !== 'greeting') MF.prefs[key] = MF.prefs[key];
+    MF.savePrefs();
+    C.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast(label + (MF.prefs[key] ? ': включено' : ': выключено'), '');
+  };
+
+  /* ------------------------- интерфейс -------------------------------- */
+  C.pickerHtml = function () {
+    const zoomChips = C.zooms
+      .map(
+        (z) =>
+          `<button type="button" class="seg-btn ${String(MF.prefs.zoom || '100') === z.id ? 'active' : ''}" data-action="zoom-set" data-id="${z.id}">${z.name}</button>`
+      )
+      .join('');
+
+    const switches = [
+      { key: 'shadows', label: 'Тени карточек' },
+      { key: 'motion', label: 'Анимации' },
+      { key: 'nums', label: 'Ровные цифры' }
+    ]
+      .map((s) => {
+        const on = s.key === 'nums' ? !!MF.prefs.nums : MF.prefs[s.key] !== false;
+        return (
+          `<button type="button" class="switch-row" data-action="custom-toggle" data-id="${s.key}">` +
+          `<span>${s.label}</span><span class="switch ${on ? 'on' : ''}"><i></i></span></button>`
+        );
+      })
+      .join('');
+
+    const blocks = C.blocks
+      .map((b) => {
+        const hidden = C.isHidden(b.id);
+        return (
+          `<button type="button" class="block-chip ${hidden ? '' : 'on'}" data-action="block-toggle" data-id="${b.id}">` +
+          `<span class="bk-eye">${hidden ? '🚫' : '👁'}</span><span>${b.name}</span></button>`
+        );
+      })
+      .join('');
+
+    return (
+      `<div class="field"><span class="field-label">Масштаб интерфейса</span>` +
+      `<div class="seg seg-4" style="margin:0">${zoomChips}</div></div>` +
+      `<div class="field"><span class="field-label">Эффекты</span>${switches}</div>` +
+      `<div class="field"><span class="field-label">Блоки на Обзоре</span>` +
+      `<div class="block-grid">${blocks}</div>` +
+      `<div class="row-between" style="margin-top:8px">` +
+      `<button class="btn btn-ghost btn-sm" data-action="custom-simple">Только главное</button>` +
+      `<button class="btn btn-ghost btn-sm" data-action="custom-all">Показать всё</button>` +
+      `</div></div>`
+    );
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+
+</script>
+    <script>
+/* js/background.js */
+/* =========================================================================
+   MoneyFlow — фон приложения
+   Можно выбрать готовую обложку из набора или свою картинку с телефона.
+   Своя картинка сжимается на устройстве, никуда не отправляется.
+   ========================================================================= */
+(function (root) {
+  const MF = root.MF || (root.MF = {});
+  const BG = (MF.bg = {});
+  const UI = MF.UI;
+
+  const MAX_SIDE = 1400;
+  const QUALITY = 0.72;
+  const MAX_KB = 900; /* предохранитель для localStorage */
+
+  function layer() {
+    let el = document.getElementById('appBg');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'appBg';
+      el.className = 'app-bg';
+      el.setAttribute('aria-hidden', 'true');
+      document.body.insertBefore(el, document.body.firstChild);
+    }
+    return el;
+  }
+
+  /* текущий фон */
+  BG.value = function () {
+    return {
+      mode: MF.prefs.bgMode || 'none',
+      art: MF.prefs.bgArt || '',
+      image: MF.prefs.bgImage || '',
+      dim: typeof MF.prefs.bgDim === 'number' ? MF.prefs.bgDim : 0.82
+    };
+  };
+
+  BG.apply = function () {
+    const bg = BG.value();
+    const el = layer();
+    let url = '';
+
+    if (bg.mode === 'art' && bg.art && MF.art) {
+      try {
+        url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MF.art.scene(bg.art));
+      } catch (e) {
+        url = '';
+      }
+    } else if (bg.mode === 'custom' && bg.image) {
+      url = bg.image;
+    }
+
+    if (!url) {
+      el.style.backgroundImage = 'none';
+      el.classList.remove('on');
+      document.body.dataset.bg = 'none';
+      return;
+    }
+
+    el.style.backgroundImage = 'url("' + url + '")';
+    el.style.setProperty('--bg-dim', String(bg.dim));
+    el.classList.add('on');
+    document.body.dataset.bg = bg.mode;
+  };
+
+  BG.setArt = function (key) {
+    MF.prefs.bgMode = key ? 'art' : 'none';
+    MF.prefs.bgArt = key || '';
+    MF.savePrefs();
+    BG.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast(key ? 'Фон: ' + (MF.art && MF.art.label ? MF.art.label(key) : key) : 'Фон выключен', 'good');
+  };
+
+  BG.clear = function () {
+    MF.prefs.bgMode = 'none';
+    MF.prefs.bgArt = '';
+    MF.prefs.bgImage = '';
+    MF.savePrefs();
+    BG.apply();
+    if (MF.App && MF.App.render) MF.App.render({ quick: true });
+    UI.toast('Фон выключен', '');
+  };
+
+  BG.setDim = function (value) {
+    MF.prefs.bgDim = Math.min(0.95, Math.max(0.4, Number(value) || 0.82));
+    MF.savePrefs();
+    BG.apply();
+  };
+
+  /* сжатие картинки на устройстве */
+  function compress(file) {
+    return new Promise(function (resolve) {
+      let url = '';
+      try {
+        url = URL.createObjectURL(file);
+      } catch (e) {
+        resolve('');
+        return;
+      }
+      const img = new Image();
+      img.onload = function () {
+        try {
+          const scale = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const data = canvas.toDataURL('image/jpeg', QUALITY);
+          URL.revokeObjectURL(url);
+          resolve(data);
+        } catch (e) {
+          URL.revokeObjectURL(url);
+          resolve('');
+        }
+      };
+      img.onerror = function () {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {}
+        resolve('');
+      };
+      img.src = url;
+    });
+  }
+
+  BG.pickFile = function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.addEventListener('change', function () {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      UI.toast('Готовлю картинку…', '');
+      compress(file).then(function (data) {
+        if (!data) {
+          UI.toast('Не получилось прочитать картинку', 'bad');
+          return;
+        }
+        const kb = Math.round((data.length / 1024) * 0.75);
+        if (kb > MAX_KB) {
+          UI.toast('Картинка слишком большая (' + kb + ' КБ) — возьмите поменьше', 'bad');
+          return;
+        }
+        MF.prefs.bgMode = 'custom';
+        MF.prefs.bgImage = data;
+        try {
+          MF.savePrefs();
+        } catch (e) {
+          MF.prefs.bgMode = 'none';
+          MF.prefs.bgImage = '';
+          UI.toast('Не хватает места для картинки', 'bad');
+          return;
+        }
+        BG.apply();
+        if (MF.App && MF.App.render) MF.App.render({ quick: true });
+        UI.toast('Фон обновлён', 'good');
+      });
+    });
+    input.click();
+  };
+
+  /* выбор фона в настройках */
+  BG.pickerHtml = function () {
+    const bg = BG.value();
+    const keys = (MF.art && MF.art.keys) || [];
+
+    const chips = keys
+      .map(function (key) {
+        const uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MF.art.scene(key));
+        const active = bg.mode === 'art' && bg.art === key;
+        return (
+          `<button type="button" class="bg-chip ${active ? 'active' : ''}" data-action="bg-art" data-id="${key}" title="${UI.esc(
+            MF.art.label(key)
+          )}"><img src="${uri}" alt="" loading="lazy"><span>${UI.esc(MF.art.label(key))}</span></button>`
+        );
+      })
+      .join('');
+
+    return (
+      `<div class="field"><span class="field-label">Фон приложения</span>` +
+      `<div class="bg-row">` +
+      `<button type="button" class="btn btn-ghost btn-sm" data-action="bg-none">Без фона</button>` +
+      `<button type="button" class="btn btn-primary btn-sm" data-action="bg-upload">Своя картинка</button>` +
+      `</div>` +
+      (bg.mode === 'custom' && bg.image
+        ? `<p class="tiny" style="margin:6px 0 0">Своя картинка загружена · <a href="#" data-action="bg-none">убрать</a></p>`
+        : '') +
+      `<div class="bg-list" style="margin-top:10px">${chips}</div>` +
+      `</div>`
+    );
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+    <script>
 /* js/app.js */
 /* =========================================================================
    MoneyFlow — сборка приложения: навигация, маршруты, обработка действий
@@ -16878,6 +19271,7 @@ body[data-season="spring"] .hero::after {
     { id: 'awards', label: 'Награды', icon: 'trophy' },
     { id: 'calendar', label: 'Платежи', icon: 'calendar' },
     { id: 'ask', label: 'Помощник', icon: 'chat' },
+    { id: 'hero', label: 'Герой', icon: 'trophy' },
     { id: 'search', label: 'Поиск', icon: 'search' }
   ];
 
@@ -16981,13 +19375,25 @@ body[data-season="spring"] .hero::after {
   function applyDashboardMode() {
     const host = document.getElementById('view');
     if (!host) return;
+
     const nodes = Array.prototype.slice.call(host.children);
-    nodes.forEach((el) => el.classList.remove('simple-hide'));
-    if (MF.prefs.mode !== 'simple' || MF.prefs.view !== 'dashboard') return;
-    nodes.forEach((el, i) => {
-      if (i >= 6) el.classList.add('simple-hide');
+    nodes.forEach(function (el) {
+      el.classList.remove('simple-hide');
+    });
+
+    if (MF.prefs.view !== 'dashboard') return;
+    if (!MF.custom || !MF.custom.keyFor) return;
+
+    const hidden = MF.custom.hiddenNow();
+    if (!hidden.length) return;
+
+    nodes.forEach(function (el) {
+      const key = MF.custom.keyFor(el);
+      if (MF.custom.alwaysVisible[key]) return;
+      if (hidden.indexOf(key) >= 0) el.classList.add('simple-hide');
     });
   }
+
   function applyLook() {
     const accent = ACCENTS.indexOf(MF.prefs.accent) >= 0 ? MF.prefs.accent : null;
     const alias = MF.prefs.theme === 'light' ? 'day' : MF.prefs.theme === 'dark' ? 'night' : MF.prefs.theme;
@@ -17017,6 +19423,7 @@ body[data-season="spring"] .hero::after {
     awards: 'Награды',
     calendar: 'Платежи',
     ask: 'Помощник',
+    hero: 'Герой',
     search: 'Поиск',
     portfolio: 'Портфель',
     analysis: 'Анализ',
@@ -17066,14 +19473,21 @@ body[data-season="spring"] .hero::after {
         (n) =>
           `<button class="nav-item ${MF.prefs.view === n.id ? 'active' : ''}" data-action="nav" data-tab="1" data-view="${n.id}">` +
           UI.icon(n.icon, '', 19) +
-          `<span>${n.label}</span></button>`
+          `<span>${MF.i18n ? MF.i18n.t(n.label) : n.label}</span></button>`
       )
       .join('');
     side.innerHTML =
-      `<div class="brand"><span class="brand-mark">` +
-      `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">` +
-      `<path d="M5.5 6.5h13M12 6.5V18.5M8 12.2h8"/></svg></span>` +
-      `<span><span class="brand-name">MoneyFlow</span><br><span class="brand-sub">личные финансы</span></span></div>` +
+      `<div class="brand" data-action="nav" data-view="dashboard">` +
+      `<span class="brand-mark" aria-hidden="true">` +
+      `<svg viewBox="0 0 512 512" width="26" height="26">` +
+      `<path d="M120 172h240a36 36 0 0 1 36 36v136a36 36 0 0 1-36 36H120a36 36 0 0 1-36-36V208a36 36 0 0 1 36-36z" fill="currentColor"/>` +
+      `<rect x="300" y="248" width="104" height="76" rx="28" fill="rgba(0,0,0,.24)"/>` +
+      `<circle cx="332" cy="286" r="15" fill="#fff" opacity="0.92"/>` +
+      `</svg></span>` +
+      `<span class="brand-text">` +
+      `<span class="brand-name">Money<span class="brand-flow">Flow</span></span>` +
+      `<span class="brand-sub">деньги на виду</span>` +
+      `</span></div>` +
       `<nav class="nav">${items}</nav>` +
       `<div class="side-foot">` +
       `<button class="nav-item" data-action="set-theme" data-theme="${MF.prefs.theme === 'dark' ? 'light' : 'dark'}">` +
@@ -17092,9 +19506,9 @@ body[data-season="spring"] .hero::after {
     bar.style.gridTemplateColumns = 'repeat(' + Math.max(2, items.length) + ', 1fr)';
     bar.innerHTML = items.map(
       (n) =>
-        `<button class="tab ${MF.prefs.view === n.id ? 'active' : ''}" data-action="nav" data-tab="1" data-view="${n.id}" aria-label="${n.label}">` +
+        `<button class="tab ${MF.prefs.view === n.id ? 'active' : ''}" data-action="nav" data-tab="1" data-view="${n.id}" aria-label="${tr(n.label)}">` +
         UI.icon(n.icon, '', 22) +
-        `<span>${n.label}</span></button>`
+        `<span>${tr(n.label)}</span></button>`
     ).join('');
   }
 
@@ -17117,6 +19531,19 @@ body[data-season="spring"] .hero::after {
       `<button class="btn btn-ghost btn-sm" data-action="reload-app">Перезагрузить</button>` +
       `</div></div>`
     );
+  }
+
+  function tr(text) {
+    if (!MF.i18n || !MF.i18n.t) return text;
+    return MF.i18n.t(text);
+  }
+
+  function translateChrome() {
+    if (!MF.i18n || MF.i18n.current() === 'ru') return;
+    try {
+      MF.i18n.applyDom(document.getElementById('tabbar'));
+      MF.i18n.applyDom(document.getElementById('sidebar'));
+    } catch (e) {}
   }
 
   function render(opts) {
@@ -17151,6 +19578,10 @@ body[data-season="spring"] .hero::after {
     host.innerHTML = html;
 
     applyDashboardMode();
+    if (MF.bg && MF.bg.apply) MF.bg.apply();
+    if (MF.looks && MF.looks.apply) MF.looks.apply();
+    if (MF.custom && MF.custom.apply) MF.custom.apply();
+    if (MF.i18n && MF.i18n.applyDom) MF.i18n.applyDom(host);
     if (MF.first) MF.first.applySeason();
     if (MF.quick && MF.quick.bindSearch) MF.quick.bindSearch();
 
@@ -17285,7 +19716,12 @@ body[data-season="spring"] .hero::after {
       MF.prefs.mode = el.dataset.id === 'simple' ? 'simple' : 'full';
       MF.savePrefs();
       render();
-      UI.toast(MF.prefs.mode === 'simple' ? 'Простой режим включён' : 'Показаны все блоки', 'good');
+      UI.toast(
+        MF.prefs.mode === 'simple'
+          ? 'Простой режим: баланс, бюджет и цели. Остальное — кнопкой «Показать всё»'
+          : 'Показаны все блоки Обзора',
+        'good'
+      );
     },    'theme-set': (el) => {
       MF.prefs.theme = el.dataset.id;
       MF.savePrefs();
@@ -17362,6 +19798,21 @@ body[data-season="spring"] .hero::after {
       render();
       UI.toast('Автобэкап выключен', '');
     },
+    'family-open': () => MF.family.open(),
+    'family-export': () => MF.family.exportForPartner(),
+    'family-join': () => MF.family.openJoin(),
+    'family-apply': () => MF.family.apply(),
+    'lang-set': (el) => MF.i18n.set(el.dataset.id),
+    'zoom-set': (el) => MF.custom.setZoom(el.dataset.id),
+    'custom-toggle': (el) => MF.custom.toggle(el.dataset.id, el.innerText.trim()),
+    'block-toggle': (el) => MF.custom.toggleBlock(el.dataset.id),
+    'custom-simple': () => MF.custom.applySimple(true),
+    'custom-all': () => MF.custom.showAll(),
+    'style-set': (el) => MF.looks.setStyle(el.dataset.id),
+    'font-set': (el) => MF.looks.setFont(el.dataset.id),
+    'bg-art': (el) => MF.bg.setArt(el.dataset.id),
+    'bg-none': () => MF.bg.clear(),
+    'bg-upload': () => MF.bg.pickFile(),
     'report-open': () => MF.report.open(),
     'csv-import': () => MF.csv.openImport(),
     'csv-save': () => MF.csv.save(),
@@ -17765,6 +20216,41 @@ body[data-season="spring"] .hero::after {
     restoreFromIdb();
     loadPhotosLazy();
     warnRestrictedContext();
+
+    /* серия заходов: считаем дни подряд и выдаём награды */
+    try {
+      if (MF.hero && MF.hero.visit) {
+        const v = MF.hero.visit();
+        if (v && v.reward) {
+          setTimeout(function () {
+            UI.sheet({
+              title: '🔥 Серия ' + v.reward.days + ' дней',
+              subtitle: 'вы заходите ' + v.reward.days + ' дней подряд',
+              body:
+                '<div class="loot-box" style="border-color:rgba(255,176,32,.55)">' +
+                '<div class="loot-ico">🔥</div>' +
+                '<div class="loot-name">+' + v.reward.gold + ' 🪙</div>' +
+                '<div class="loot-sub">и +' + v.reward.xp + ' XP к опыту героя</div>' +
+                '</div>' +
+                '<p class="tiny" style="margin-top:12px">Заходите каждый день — на 7, 14, 30, 60 и 100 дней награды больше. Пропуск дня начинает серию заново.</p>',
+              footer: '<button class="btn btn-primary" data-action="sheet-close">Забрать</button>',
+              wide: true
+            });
+            render();
+          }, 900);
+        } else if (v && v.isNew) {
+          const info = MF.hero.visitInfo();
+          const next = info.next;
+          const note = next
+            ? 'ещё ' + (next.days - v.streak) + ' дн. до ' + next.gold + ' 🪙'
+            : 'все награды собраны';
+          setTimeout(function () {
+            UI.toast('🔥 Серия заходов: ' + v.streak + ' дн. подряд · ' + note, 'good');
+          }, 700);
+        }
+      }
+    } catch (e) {}
+
     if (MF.first && MF.first.hasPin && MF.first.hasPin()) {
       MF.first.unlocked = false;
       MF.first.showLock();
@@ -17812,6 +20298,9 @@ body[data-season="spring"] .hero::after {
     boot();
   }
 })(typeof window !== 'undefined' ? window : globalThis);
+
+
+
 
 
 
@@ -17955,6 +20444,11 @@ body[data-season="spring"] .hero::after {
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
