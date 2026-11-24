@@ -4156,13 +4156,42 @@ body[data-season="spring"] .hero::after {
 .boot-fail .tiny { font-size: 12px; color: var(--text-3, #6d7b90); }
 
 
+/* стартовый экран без данных */
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: calc(100vh - var(--tabbar-h) - 80px);
+  padding: 24px 18px;
+  text-align: center;
+  animation: fadeUp .35s forwards;
+}
+
+.wl-logo { font-size: 56px; line-height: 1; }
+.wl-title { font-size: 30px; margin: 2px 0 0; letter-spacing: -0.03em; font-weight: 800; }
+.wl-sub { color: var(--text-2); font-size: 13.5px; max-width: 320px; margin: 0 0 10px; }
+.wl-note { color: var(--text-3); font-size: 11.5px; max-width: 300px; margin-top: 8px; }
+.welcome-screen .btn { max-width: 320px; }
+
+/* заглушка на время загрузки: даже при сбое JS экран не пустой */
+.boot-splash {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  color: var(--text-3);
+  font-size: 13.5px;
+  letter-spacing: .01em;
+}
+
 </style>
   </head>
   <body>
     <div class="app">
       <aside class="sidebar" id="sidebar" aria-label="Основная навигация"></aside>
       <div class="main">
-        <main class="view" id="view" tabindex="-1"></main>
+        <main class="view" id="view" tabindex="-1"><div class="boot-splash">MoneyFlow загружается…</div></main>
       </div>
       <nav class="tabbar" id="tabbar" aria-label="Разделы"></nav>
       <button class="fab" id="fab" data-action="open-add" aria-label="Добавить операцию">
@@ -8615,7 +8644,25 @@ body[data-season="spring"] .hero::after {
     );
   }
 
+  /* стартовый экран, когда данных ещё нет: вместо пустых нулей — выбор действий */
+  function emptyWelcome() {
+    return (
+      `<div class="welcome-screen">` +
+      `<div class="wl-logo">💰</div>` +
+      `<h1 class="wl-title">MoneyFlow</h1>` +
+      `<p class="wl-sub">Траты, доходы и цели. Работает без интернета — данные остаются на этом устройстве.</p>` +
+      `<button class="btn btn-primary btn-block" data-action="onboarding">Настроить за минуту</button>` +
+      `<button class="btn btn-ghost btn-block" data-action="welcome-demo">Посмотреть на демо-данных</button>` +
+      `<button class="btn btn-ghost btn-block" data-action="import-json">Восстановить из копии</button>` +
+      `<p class="wl-note">Демо-данные и копию можно удалить в любой момент: Настройки → Данные.</p>` +
+      `</div>`
+    );
+  }
   S.dashboard = function () {
+    if (!(MF.state.transactions || []).length && Math.abs(MF.totals().accounts) < 0.01 && !MF.state.demo) {
+      return emptyWelcome();
+    }
+
     const st = MF.state;
     const key = MF.prefs.month;
     const s = MF.summary(key);
@@ -10208,6 +10255,7 @@ body[data-season="spring"] .hero::after {
     );
   };
 })(typeof window !== 'undefined' ? window : globalThis);
+
 
 
 
@@ -17995,6 +18043,8 @@ body[data-season="spring"] .hero::after {
 </script>
 </body>
 </html>
+
+
 
 
 

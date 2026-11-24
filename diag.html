@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MoneyFlow — диагностика</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; padding: 18px 16px 40px;
+    background: #080b11; color: #eef2f9;
+    font: 15px/1.55 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -.02em; }
+  p.sub { color: #8494a8; font-size: 12.5px; margin: 0 0 16px; }
+  .block { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; background: #11161f; }
+  .block h2 { font-size: 13px; margin: 0 0 8px; color: #a3b0c4; letter-spacing: .04em; text-transform: uppercase; }
+  .row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 13.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row span:first-child { color: #8494a8; }
+  .ok { color: #43d18b; font-weight: 650; }
+  .bad { color: #ff6b7a; font-weight: 650; }
+  .warn { color: #ffb020; font-weight: 650; }
+  #verdict { font-size: 16px; font-weight: 700; padding: 14px; border-radius: 14px; margin-bottom: 14px; background: #1b2433; }
+  pre { white-space: pre-wrap; font-size: 11px; color: #8494a8; margin: 6px 0 0; max-height: 220px; overflow: auto; }
+  iframe { width: 100%; height: 260px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #000; }
+</style>
+</head>
+<body>
+  <h1>Диагностика MoneyFlow</h1>
+  <p class="sub">Откройте эту страницу на телефоне и пришлите скриншот целиком</p>
+
+  <div id="verdict">Проверяю…</div>
+
+  <div class="block">
+    <h2>Устройство и браузер</h2>
+    <div id="env"></div>
+  </div>
+
+  <div class="block">
+    <h2>Поддержка возможностей</h2>
+    <div id="feat"></div>
+  </div>
+
+  <div class="block">
+    <h2>Service worker и кэш</h2>
+    <div id="sw"></div>
+  </div>
+
+  <div class="block">
+    <h2>Проверка самого приложения</h2>
+    <div id="app"></div>
+  </div>
+
+  <div class="block">
+    <h2>Ошибки JavaScript</h2>
+    <pre id="errors">—</pre>
+  </div>
+
+<script>
+(function () {
+  var errors = [];
+  window.addEventListener('error', function (e) {
+    errors.push((e.message || 'error') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || 0));
+    document.getElementById('errors').textContent = errors.join('\n');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    errors.push('promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+    document.getElementById('errors').textContent = errors.join('\n');
+  });
+
+  function row(label, value, cls) {
+    return '<div class="row"><span>' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>';
+  }
+
+  /* --- окружение --- */
+  var env = [];
+  var ua = navigator.userAgent;
+  var browser = /Chrome\/(\d+)/.exec(ua);
+  var isChrome = !!browser && !/Edg|OPR|YaBrowser/.test(ua);
+  env.push(row('Экран', window.innerWidth + '×' + window.innerHeight + ' (' + (window.devicePixelRatio || 1) + 'x)'));
+  env.push(row('Браузер', browser ? (isChrome ? 'Chrome ' : 'Chromium ') + browser[1] : (ua.split(' ').slice(-2).join(' ')).slice(0, 30)));
+  env.push(row('Режим', matchMedia('(display-mode: standalone)').matches ? 'приложение (standalone)' : 'вкладка браузера'));
+  env.push(row('Онлайн', navigator.onLine ? 'да' : 'нет'));
+  env.push(row('Язык', navigator.language || '—'));
+  document.getElementById('env').innerHTML = env.join('');
+
+  /* --- возможности --- */
+  var feat = [];
+  function supports(prop, value) {
+    try { return CSS.supports(prop, value); } catch (e) { return false; }
+  }
+  var checks = [
+    ['CSS Grid', supports('display', 'grid')],
+    ['CSS-переменные', supports('color', 'var(--x)')],
+    ['color-mix()', supports('background', 'color-mix(in srgb, #fff 50%, transparent)')],
+    ['backdrop-filter', supports('backdrop-filter', 'blur(4px)')],
+    ['dvh', supports('height', '100dvh')],
+    ['position: sticky', supports('position', 'sticky')],
+    ['Service Worker', 'serviceWorker' in navigator],
+    ['localStorage', (function () { try { localStorage.setItem('t', '1'); localStorage.removeItem('t'); return true; } catch (e) { return false; } })()],
+    ['IndexedDB', !!window.indexedDB]
+  ];
+  checks.forEach(function (c) {
+    feat.push(row(c[0], c[1] ? 'есть' : 'НЕТ', c[1] ? 'ok' : 'bad'));
+  });
+  document.getElementById('feat').innerHTML = feat.join('');
+
+  /* --- service worker --- */
+  var swBox = document.getElementById('sw');
+  if (!('serviceWorker' in navigator)) {
+    swBox.innerHTML = row('Service worker', 'не поддерживается', 'bad');
+  } else {
+    navigator.serviceWorker.getRegistrations().then(function (regs) {
+      var html = row('Регистраций', String(regs.length), regs.length ? 'ok' : 'warn');
+      regs.forEach(function (r) {
+        html += row('Scope', r.scope.replace(location.origin, ''));
+        html += row('Состояние', (r.active && r.active.state) || (r.installing ? 'installing' : 'нет'), r.active ? 'ok' : 'warn');
+      });
+      swBox.innerHTML = html;
+      if (window.caches) {
+        caches.keys().then(function (keys) {
+          swBox.innerHTML += row('Кэшей', String(keys.length), 'ok');
+          swBox.innerHTML += row('Имена', keys.join(', ').slice(0, 60));
+        });
+      }
+    });
+  }
+
+  /* --- проверка приложения в iframe --- */
+  var appBox = document.getElementById('app');
+  var frame = document.createElement('iframe');
+  frame.src = './index.html?diag=1';
+  appBox.innerHTML = '<div class="row"><span>Загрузка приложения…</span><span class="warn">ждём</span></div>';
+  frame.onload = function () {
+    setTimeout(function () {
+      var out = '';
+      try {
+        var doc = frame.contentDocument;
+        var view = doc.getElementById('view');
+        var tabs = doc.querySelectorAll('.tab').length;
+        var text = (doc.body.innerText || '').replace(/\s+/g, ' ').trim();
+        var title = doc.title;
+        var kids = view ? view.children.length : 0;
+
+        out += row('Заголовок', title || '—', title ? 'ok' : 'bad');
+        out += row('Блоков в #view', String(kids), kids > 0 ? 'ok' : 'bad');
+        out += row('Вкладок', String(tabs), tabs > 0 ? 'ok' : 'bad');
+        out += row('Текст на экране', text ? text.slice(0, 40) + '…' : 'ПУСТО', text ? 'ok' : 'bad');
+
+        var verdict = document.getElementById('verdict');
+        if (kids > 0 && tabs > 0) {
+          verdict.innerHTML = '✅ Приложение работает на этом устройстве.<br><small style="font-weight:400;color:#a3b0c4">Значит проблема была в установленной копии — её надо удалить и поставить заново.</small>';
+        } else {
+          verdict.innerHTML = '❌ Приложение не отрисовалось.<br><small style="font-weight:400;color:#a3b0c4">Пришлите этот скриншот — по нему видно причину.</small>';
+        }
+      } catch (e) {
+        out += row('Ошибка', String(e.message).slice(0, 60), 'bad');
+      }
+      appBox.innerHTML = out;
+      appBox.appendChild(frame);
+    }, 2500);
+  };
+  frame.onerror = function () {
+    appBox.innerHTML = row('iframe', 'не загрузился', 'bad');
+  };
+  appBox.style.minHeight = '300px';
+  appBox.appendChild(frame);
+})();
+</script>
+</body>
+</html>
