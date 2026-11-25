@@ -4852,6 +4852,85 @@ body.tour-on .mentor-fab { display: none; }
   .mode-switch { padding: 4px 9px; font-size: 11px; }
 }
 
+
+/* --------------------- быстрое меню на «＋» -------------------------- */
+.fab-dial {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--tabbar-h) + 24px + var(--safe-bottom));
+  z-index: 46;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.fab-dial .fab {
+  position: static;
+  bottom: auto;
+  right: auto;
+  transition: transform .18s ease;
+}
+
+.fab-dial.open .fab svg { transform: rotate(45deg); }
+.fab-dial.open .fab { transform: rotate(0deg); }
+
+.fab-dial .fab svg { transition: transform .2s ease; }
+
+.dial-list {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.fab-dial.open .dial-list { display: flex; }
+
+.dial-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, .8);
+  animation: dialIn .16s ease both;
+}
+
+.dial-btn:active { transform: scale(.97); }
+.dial-btn:nth-child(2) { animation-delay: .03s; }
+.dial-btn:nth-child(3) { animation-delay: .06s; }
+
+.dial-ico { font-size: 15px; }
+.dial-text { white-space: nowrap; }
+
+@keyframes dialIn {
+  from { opacity: 0; transform: translateY(6px) scale(.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* затемнение под меню */
+body.dial-on::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 14, .45);
+  z-index: 44;
+  animation: fadeIn .15s ease both;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 430px) {
+  .fab-dial { right: 14px; }
+  .dial-btn { padding: 8px 12px 8px 9px; font-size: 12.5px; }
+}
+
 </style>
     <style>
 /* ===================== СТИЛИ ИНТЕРФЕЙСА ================================
@@ -5175,11 +5254,21 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
         <main class="view" id="view" tabindex="-1"><div class="boot-splash">MoneyFlow загружается…</div></main>
       </div>
       <nav class="tabbar" id="tabbar" aria-label="Разделы"></nav>
-      <button class="fab" id="fab" data-action="open-add" aria-label="Добавить операцию">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </button>
+      <div class="fab-dial" id="fabDial">
+        <div class="dial-list" role="menu" aria-label="Что добавить">
+          <button class="dial-btn" role="menuitem" data-action="dial-expense">
+            <span class="dial-ico">🛒</span><span class="dial-text">Трата</span></button>
+          <button class="dial-btn" role="menuitem" data-action="dial-income">
+            <span class="dial-ico">💰</span><span class="dial-text">Доход</span></button>
+          <button class="dial-btn" role="menuitem" data-action="dial-goal">
+            <span class="dial-ico">🎯</span><span class="dial-text">Цель</span></button>
+        </div>
+        <button class="fab" id="fab" data-action="dial-toggle" aria-label="Добавить" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div id="mentorHost"></div>
@@ -5395,8 +5484,16 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     { id: 'other', name: 'Другое', icon: '📄', color: '#94a3b8' }
   ];
 
+  /* принимает Date, строку '2026-11-25' или метку времени */
   function isoDate(d) {
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    if (d == null || d === '') return '';
+    if (typeof d === 'string') {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d.trim());
+      if (m) return m[1] + '-' + m[2] + '-' + m[3];
+    }
+    const dt = d instanceof Date ? d : new Date(d);
+    if (!dt || isNaN(dt.getTime())) return '';
+    return dt.getFullYear() + '-' + pad2(dt.getMonth() + 1) + '-' + pad2(dt.getDate());
   }
   function todayISO() {
     return isoDate(new Date());
@@ -21313,6 +21410,12 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     const fab = document.getElementById('fab');
     if (fab) fab.hidden = view === 'settings';
 
+    const dialBox = document.getElementById('fabDial');
+    if (dialBox) {
+      dialBox.hidden = view === 'settings';
+      if (view === 'settings') closeDial();
+    }
+
     if (view !== lastView && !opts.keepScroll) {
       window.scrollTo(0, opts.restoreScroll || 0);
       lastView = view;
@@ -21358,6 +21461,29 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     return m && MF.screens[m[1]] ? m[1] : null;
   }
 
+  /* быстрое меню на кнопке «＋» */
+  function dialEl() {
+    return document.getElementById('fabDial');
+  }
+
+  function toggleDial(force) {
+    const dial = dialEl();
+    if (!dial) return;
+    const open = typeof force === 'boolean' ? force : !dial.classList.contains('open');
+    dial.classList.toggle('open', open);
+
+    const fab = document.getElementById('fab');
+    if (fab) fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('dial-on', open);
+
+    const first = dial.querySelector('.dial-btn');
+    if (open && first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 30);
+  }
+
+  function closeDial() {
+    toggleDial(false);
+  }
+
   /* ------------------------------- действия ------------------------------ */
   const actions = {
     nav: (el) => {
@@ -21380,6 +21506,19 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       MF.prefs.month = MF.currentMonth();
       MF.savePrefs();
       render();
+    },
+    'dial-toggle': () => toggleDial(),
+    'dial-expense': () => {
+      closeDial();
+      F.openTx(null, 'expense');
+    },
+    'dial-income': () => {
+      closeDial();
+      F.openTx(null, 'income');
+    },
+    'dial-goal': () => {
+      closeDial();
+      F.openGoal(null);
     },
     'open-add': () => F.openTx(null),
     'week-open': () => MF.weekly.preview(),
@@ -21886,6 +22025,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     }
 
     if (e.key === 'Escape') {
+      closeDial();
       const host = document.getElementById('sheetHost');
       if (host && !host.hidden) UI.closeSheet();
     }
@@ -21965,6 +22105,18 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       if (MF.App && MF.App.render) MF.App.render();
     });
   }
+  /* клик мимо меню закрывает его */
+  document.addEventListener(
+    'click',
+    function (e) {
+      const dial = document.getElementById('fabDial');
+      if (!dial || !dial.classList.contains('open')) return;
+      if (e.target && e.target.closest && e.target.closest('#fabDial')) return;
+      closeDial();
+    },
+    true
+  );
+
   /* -------------------------------- запуск ------------------------------- */
   function boot() {
     App.actions = actions;
