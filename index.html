@@ -15842,8 +15842,12 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
   function equipped(h) {
     const out = {};
     SLOTS.forEach((slot) => {
-      const found = findItem(slot.id, h.slots[slot.id]);
-      const item = found && found.slot === slot.id ? found : slot.items[0];
+      const wanted = h.slots[slot.id];
+      /* обычная вещь из слота или легендарка того же слота */
+      const normal = slot.items.find((x) => x.id === wanted) || null;
+      const legend = normal ? null : LEGENDARY.find((x) => x.id === wanted && x.slot === slot.id) || null;
+      const item = normal || legend || slot.items[0];
+
       out[slot.id] = item;
       out[slot.id].tier = slot.items.indexOf(item); /* -1 у легендарки */
       out[slot.id].legendary = slot.items.indexOf(item) < 0;
@@ -15934,7 +15938,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     h.spent[stat] += 1;
     save();
     UI.toast('+1 к ' + (stat === 'str' ? 'силе' : stat === 'agi' ? 'ловкости' : 'интеллекту'), 'good');
-    MF.App.render();
+    if (MF.App && MF.App.render) MF.App.render();
   };
 
   H.upgrade = function (id) {
@@ -15962,7 +15966,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     h.slots[id] = next.id;
     save();
     UI.toast(next.icon + ' ' + next.name + ' — надето!', 'good');
-    MF.App.render();
+    if (MF.App && MF.App.render) MF.App.render();
   };
 
   H.setCostume = function (id) {
@@ -15977,7 +15981,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     h.costume = c.id;
     save();
     UI.toast(c.icon + ' Костюм «' + c.name + '» надет', 'good');
-    MF.App.render();
+    if (MF.App && MF.App.render) MF.App.render();
   };
 
   /* ----------------------------- лут ---------------------------------- */
@@ -16179,7 +16183,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
       footer: `<button class="btn btn-primary" data-action="sheet-close">Отлично</button>`,
       wide: true
     });
-    MF.App.render();
+    if (MF.App && MF.App.render) MF.App.render();
   };
 
   function rarityText(item) {
@@ -16197,7 +16201,7 @@ html[data-font="system"] { --font: "Inter", "SF Pro Display", -apple-system, "Se
     h.slots[inv.slot] = inv.itemId;
     save();
     UI.toast(inv.icon + ' ' + inv.name + ' — надето', 'good');
-    MF.App.render();
+    if (MF.App && MF.App.render) MF.App.render();
   };
 
   /* ----------------------------- экран --------------------------------- */
